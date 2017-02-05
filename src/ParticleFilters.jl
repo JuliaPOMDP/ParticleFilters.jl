@@ -41,7 +41,7 @@ n_particles(b::ParticleCollection) = length(b.particles)
 particles(p::ParticleCollection) = p.particles
 weight_sum(::ParticleCollection) = 1.0
 weight(b::ParticleCollection, i::Int) = 1.0/length(b.particles)
-rand(b::ParticleCollection) = b.particles[rand(rng, 1:length(b.particles))]
+rand(rng::AbstractRNG, b::ParticleCollection) = b.particles[rand(rng, 1:length(b.particles))]
 mean(b::ParticleCollection) = sum(b.particles)/length(b.particles)
 
 immutable WeightedParticleBelief{T} <: AbstractParticleBelief{T}
