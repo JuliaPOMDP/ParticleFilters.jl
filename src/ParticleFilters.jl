@@ -133,14 +133,23 @@ function update{S}(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o)
     ps = particles(b)
     pm = up._particle_memory
     wm = up._weight_memory
-    resize!(pm, n_particles(b))
-    resize!(wm, n_particles(b))
+    resize!(pm, 0)
+    resize!(wm, 0)
+    sizehint!(pm, n_particles(b))
+    sizehint!(wm, n_particles(b))
+    all_terminal = true
     for i in 1:n_particles(b)
         s = ps[i]
-        sp = generate_s(up.pomdp, s, a, up.rng)
-        pm[i] = sp
-        od = observation(up.pomdp, s, a, sp)
-        wm[i] = pdf(od, o)
+        if !isterminal(up.pomdp, s)
+            all_terminal = false
+            sp = generate_s(up.pomdp, s, a, up.rng)
+            push!(pm, sp)
+            od = observation(up.pomdp, s, a, sp)
+            push!(wm, pdf(od, o))
+        end
+    end
+    if all_terminal
+        error("Particle filter update error: all states in the particle collection were terminal")
     end
     return resample(up.resample, WeightedParticleBelief{S}(pm, wm, sum(wm), nothing), up.rng)
 end
