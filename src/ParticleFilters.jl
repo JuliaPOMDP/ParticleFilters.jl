@@ -149,7 +149,7 @@ function update{S}(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o)
         end
     end
     if all_terminal
-        error("Particle filter update error: all states in the particle collection were terminal")
+        error("Particle filter update error: all states in the particle collection were terminal.")
     end
     return resample(up.resample, WeightedParticleBelief{S}(pm, wm, sum(wm), nothing), up.rng)
 end
