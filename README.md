@@ -13,6 +13,7 @@ The function `update(filter, b, a, o)` where
 - `b` is a belief about the system state (for example a particle collection),
 - `a` is a control input, and 
 - `o` is an observation
+
 will return a particle collection representing the belief at the next time step.
 
 # Installation
