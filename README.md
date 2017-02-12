@@ -1,12 +1,12 @@
 # ParticleFilters
 
 [![Build Status](https://travis-ci.org/zsunberg/ParticleFilters.jl.svg?branch=master)](https://travis-ci.org/zsunberg/ParticleFilters.jl)
-
 [![Coverage Status](https://coveralls.io/repos/zsunberg/ParticleFilters.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/zsunberg/ParticleFilters.jl?branch=master)
-
 [![codecov.io](http://codecov.io/github/zsunberg/ParticleFilters.jl/coverage.svg?branch=master)](http://codecov.io/github/zsunberg/ParticleFilters.jl?branch=master)
 
-Provides some simple generic particle filters.
+![particles.gif](https://github.com/zsunberg/ParticleFilters.jl/raw/master/img/particles.gif)
+
+This package rovides some simple generic particle filters.
 
 The function `update(filter, b, a, o)` where 
 - `filter` is a particle filter from this package, 
@@ -50,7 +50,9 @@ end
 write("lightdark_particle.gif", film)
 ```
 
-This should produce a gif similar to the one at the top of the page.
+This should produce a gif similar to the one below.
+
+![lightdark_particle.gif](https://github.com/zsunberg/ParticleFilters.jl/raw/master/img/lightdark_particle.gif)
 
 You may not wish to define the entire POMDPs interface for your model. In that case, you can still use the particle filter if you just define `generate_s()` and `observation()` for your model. For example, a double integrator model (written for clarity, not speed) is shown below.
 
@@ -102,6 +104,6 @@ end
 write("particles.gif", film)
 ```
 
-This will produce the gif below. Note that a Kalman Filter would have been much more appropriate for this linear-Gaussian case.
+This will produce the gif at the top of the page. Note that a Kalman Filter would have been much more appropriate for this linear-Gaussian case.
 
 
