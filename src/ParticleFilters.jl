@@ -5,6 +5,8 @@ module ParticleFilters
 using POMDPs
 using GenerativeModels
 import POMDPs: pdf, mode, update, initialize_belief
+import POMDPs: state_type, isterminal, observation
+import GenerativeModels: generate_s
 import Base: rand, mean, eltype
 
 export
@@ -24,110 +26,86 @@ export
     weight,
     weights
 
+export
+    pdf,
+    mode,
+    update,
+    initialize_belief
+
+export
+    generate_s,
+    observation,
+    isterminal,
+    state_type
 
 abstract AbstractParticleBelief{T}
 Base.eltype{T}(::Type{AbstractParticleBelief{T}}) = T
+
+### Belief types ###
 
 """
 Unweighted particle belief
 """
 immutable ParticleCollection{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
-    _probs::Nullable{Dict{T,Float64}}
+    _probs::Nullable{Dict{T,Float64}} # this is not used now, but may be later
 end
 ParticleCollection{T}(p::AbstractVector{T}) = ParticleCollection{T}(p, nothing)
-
-n_particles(b::ParticleCollection) = length(b.particles)
-particles(p::ParticleCollection) = p.particles
-weight_sum(::ParticleCollection) = 1.0
-weight(b::ParticleCollection, i::Int) = 1.0/length(b.particles)
-rand(rng::AbstractRNG, b::ParticleCollection) = b.particles[rand(rng, 1:length(b.particles))]
-mean(b::ParticleCollection) = sum(b.particles)/length(b.particles)
 
 immutable WeightedParticleBelief{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
     weights::Vector{Float64}
     weight_sum::Float64
-    _probs::Nullable{Dict{T,Float64}}
+    _probs::Nullable{Dict{T,Float64}} # this is not used now, but may be later
 end
 
-n_particles(b::WeightedParticleBelief) = length(b.particles)
-particles(p::WeightedParticleBelief) = p.particles
-weight_sum(b::WeightedParticleBelief) = b.weight_sum
-weight(b::WeightedParticleBelief, i::Int) = b.weights[i]
-weights(b::WeightedParticleBelief) = b.weights
+### Belief interface ###
+# see beliefs.jl for implementation
+# also rand(), pdf(), and mode() from POMDPs.jl are part of the belief interface.
+"""
+    n_particles(b::AbstractParticleBelief)
 
-function rand(rng::AbstractRNG, b::WeightedParticleBelief)
-    t = rand(rng) * weight_sum(b)
-    i = 1
-    cw = b.weights[1]
-    while cw < t && i < length(b.weights)
-        i += 1
-        @inbounds cw += b.weights[i]
-    end
-    return
-end
-mean(b::WeightedParticleBelief) = dot(b.weights, b.particles)/weight_sum(b)
+Return the number of particles.
+"""
+function n_particles end
 
-function pdf{S}(b::AbstractParticleBelief{S}, s::S)
-    if isnull(b._probs)
-        # search through the particle array (very slow)
-        w = 0.0
-        for i in 1:length(b.particles)
-            if b.particles[i] == s
-                w += weight(b,i)
-            end
-        end
-        return w/weight_sum(b)
-    else
-        return get(get(b._probs), s, 0.0)
-    end
-end
+"""
+    particles(b::AbstractParticleBelief)
 
-function mode{T}(b::AbstractParticleBelief{T}) # don't know if this is efficient
-    if isnull(b._probs)
-        d = Dict{T, Float64}()
-        best_weight = weight(b,1)
-        most_likely = first(particles(b))
-        ps = particles(b)
-        for i in 2:n_particles(b)
-            s = ps[i]
-            if haskey(d, s)
-                d[s] += weight(b, i)
-            else
-                d[s] = weight(b, i)
-            end
-            if d[s] > best_weight
-                best_weight = d[s]
-                most_likely = s
-            end
-        end
-        return most_likely
-    else
-        probs = get(b._probs)
-        best_weight = 0.0
-        most_likely = first(keys(probs))
-        for (s,w) in probs
-            if w > best_weight
-                best_weight = w
-                most_likely = s
-            end
-        end
-        return most_likely
-    end
-end
+Return a vector of the particles.
+"""
+function particles end
 
+"""
+    weight_sum(b::AbstractParticleBelief)
+
+Return the sum of the withs of the particle collection.
+"""
+function weight_sum end
+
+"""
+    weight(b::AbstractParticleBelief, i)
+
+Return the weight for particle i.
+"""
+function weight end
+
+### Basic Particle Filter ###
+# implements the POMDPs.jl Updater interface
+# see updater.jl for implementations
 type SimpleParticleFilter{S,R} <: Updater{ParticleCollection{S}}
-    pomdp::POMDP{S}
+    model
     resample::R
     rng::AbstractRNG
     _particle_memory::Vector{S}
     _weight_memory::Vector{Float64}
-end
-SimpleParticleFilter{S,R}(pomdp::POMDP{S}, resample::R, rng::AbstractRNG) = SimpleParticleFilter(pomdp, resample, rng, S[], Float64[])
-SimpleParticleFilter{S,R}(pomdp::POMDP{S}, resample::R; rng::AbstractRNG=Base.GLOBAL_RNG) = SimpleParticleFilter(pomdp, resample, rng)
 
-initialize_belief{S}(up::SimpleParticleFilter{S}, d::Any) = resample(up.resample, d, up.rng)
+    SimpleParticleFilter(model, resample, rng) = new(model, resample, rng, state_type(model)[], Float64[])
+end
+function SimpleParticleFilter{R}(model, resample::R, rng::AbstractRNG)
+    SimpleParticleFilter{state_type(model),R}(model, resample, rng)
+end
+SimpleParticleFilter(model, resample; rng::AbstractRNG=Base.GLOBAL_RNG) = SimpleParticleFilter(model, resample, rng)
 
 function update{S}(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o)
     ps = particles(b)
@@ -140,11 +118,11 @@ function update{S}(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o)
     all_terminal = true
     for i in 1:n_particles(b)
         s = ps[i]
-        if !isterminal(up.pomdp, s)
+        if !isterminal(up.model, s)
             all_terminal = false
-            sp = generate_s(up.pomdp, s, a, up.rng)
+            sp = generate_s(up.model, s, a, up.rng)
             push!(pm, sp)
-            od = observation(up.pomdp, s, a, sp)
+            od = observation(up.model, s, a, sp)
             push!(wm, pdf(od, o))
         end
     end
@@ -155,23 +133,15 @@ function update{S}(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o)
     return resample(up.resample, WeightedParticleBelief{S}(pm, wm, sum(wm), nothing), up.rng)
 end
 
-resample(f::Function, d::Any, rng::AbstractRNG) = f(d, rng)
 
+# default for non-POMDPs
+state_type(model) = Any
+isterminal(model, s) = false
+observation(model, s, a, sp) = observation(model, a, sp)
+
+### Resamplers ###
 immutable ImportanceResampler
     n::Int
-end
-
-function resample{S}(r::ImportanceResampler, b::WeightedParticleBelief{S}, rng::AbstractRNG)
-    #XXX this may break if StatsBase changes
-    ps = Array(S, r.n)
-    alias_sample!(rng, particles(b), weights(b), weight_sum(b), ps)
-    return ParticleCollection(ps)
-end
-
-typealias SIRParticleFilter{T} SimpleParticleFilter{T, ImportanceResampler}
-
-function SIRParticleFilter{S}(pomdp::POMDP{S}, n::Int; rng::AbstractRNG=Base.GLOBAL_RNG)
-    return SimpleParticleFilter(pomdp, ImportanceResampler(n), rng)
 end
 
 # low variance sampling algorithm on page 110 of Probabilistic Robotics by Thrun Burgard and Fox
@@ -179,31 +149,25 @@ immutable LowVarianceResampler
     n::Int
 end
 
-function resample{S}(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG)
-    ps = Array(S, re.n)
-    r = rand(rng)*weight_sum(b)/re.n
-    c = weight(b,1)
-    i = 1
-    U = r
-    for m in 1:re.n
-        while U > c
-            i += 1
-            c += weight(b, i)
-        end
-        U += weight_sum(b)/re.n
-        ps[m] = particles(b)[i]
-    end
-    return ParticleCollection(ps)
+### Resample Interface ###
+# see resamplers.jl for implementations
+"""
+    resample(resampler, b::WeightedParticleBelief, rng::AbstractRNG)
+
+Sample a new ParticleCollection from b.
+"""
+function resample end
+
+### Convenience Aliases ###
+typealias SIRParticleFilter{T} SimpleParticleFilter{T, ImportanceResampler}
+
+function SIRParticleFilter(model, n::Int; rng::AbstractRNG=Base.GLOBAL_RNG)
+    return SimpleParticleFilter(model, ImportanceResampler(n), rng)
 end
 
-function resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, rng::AbstractRNG)
-    ps = Array(eltype(b), r.n)
-    for i in 1:r.n
-        ps[i] = rand(rng, b)
-    end
-    return ParticleCollection(ps)
-end
-
+include("beliefs.jl")
+include("updater.jl")
+include("resamplers.jl")
 include("alias_sample.jl")
 
 end # module
