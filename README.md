@@ -6,7 +6,7 @@
 
 ![particles.gif](https://github.com/zsunberg/ParticleFilters.jl/raw/master/img/particles.gif)
 
-This package rovides some simple generic particle filters.
+This package rovides some simple generic particle filters, and may serve as a template for making custom particle filters and other updaters for POMDPs.jl.
 
 The function `update(filter, b, a, o)` where 
 - `filter` is a particle filter from this package, 
@@ -14,7 +14,7 @@ The function `update(filter, b, a, o)` where
 - `a` is a control input, and 
 - `o` is an observation
 
-will return a particle collection representing the belief at the next time step.
+will return a particle collection representing the belief at the next time step. The resampling strategy can be controlled by specifying a custom function or object to resample.
 
 # Installation
 

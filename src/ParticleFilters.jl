@@ -93,6 +93,13 @@ function weight end
 ### Basic Particle Filter ###
 # implements the POMDPs.jl Updater interface
 # see updater.jl for implementations
+"""
+    SimpleParticleFilter
+
+A particle filter that calculates relative weights for each particle based on observation likelihood, and then resamples.
+
+The resample field may be a function or an object that controls resampling. If it is a function `f`, `f(b, rng)` will be called. If it is an object, `o`, `resample(o, b, rng)` will be called, where `b` is a `WeightedParticleBelief`.
+"""
 type SimpleParticleFilter{S,R} <: Updater{ParticleCollection{S}}
     model
     resample::R
