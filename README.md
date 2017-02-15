@@ -1,10 +1,10 @@
 # ParticleFilters
 
-[![Build Status](https://travis-ci.org/zsunberg/ParticleFilters.jl.svg?branch=master)](https://travis-ci.org/zsunberg/ParticleFilters.jl)
-[![Coverage Status](https://coveralls.io/repos/zsunberg/ParticleFilters.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/zsunberg/ParticleFilters.jl?branch=master)
-[![codecov.io](http://codecov.io/github/zsunberg/ParticleFilters.jl/coverage.svg?branch=master)](http://codecov.io/github/zsunberg/ParticleFilters.jl?branch=master)
+[![Build Status](https://travis-ci.org/JuliaPOMDP/ParticleFilters.jl.svg?branch=master)](https://travis-ci.org/JuliaPOMDP/ParticleFilters.jl)
+[![Coverage Status](https://coveralls.io/repos/JuliaPOMDP/ParticleFilters.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/JuliaPOMDP/ParticleFilters.jl?branch=master)
+[![codecov.io](http://codecov.io/github/JuliaPOMDP/ParticleFilters.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaPOMDP/ParticleFilters.jl?branch=master)
 
-![particles.gif](https://github.com/zsunberg/ParticleFilters.jl/raw/master/img/particles.gif)
+![particles.gif](https://github.com/JuliaPOMDP/ParticleFilters.jl/raw/master/img/particles.gif)
 
 This package rovides some simple generic particle filters, and may serve as a template for making custom particle filters and other updaters for POMDPs.jl.
 
