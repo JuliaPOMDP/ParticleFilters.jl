@@ -1,8 +1,6 @@
 using ParticleFilters
 using Distributions
 using StaticArrays
-using Reel
-using Plots
 
 immutable DblIntegrator2D 
     W::Matrix{Float64} # Process noise covariance
@@ -31,7 +29,7 @@ rng = MersenneTwister(1)
 filter = SIRParticleFilter(model, N, rng=rng)
 b = ParticleCollection([4.0*rand(rng, 4)-2.0 for i in 1:N])
 s = [0.0, 1.0, 1.0, 0.0]
-film = roll(fps=10, duration=10) do t, dt
+for i in 1:100
     global b, s; print(".")
     m = mean(b)
     a = [-m[1], -m[2]] # try to orbit the origin
@@ -39,7 +37,7 @@ film = roll(fps=10, duration=10) do t, dt
     o = rand(rng, observation(model, a, s))
     b = update(filter, b, a, o)
 
-    scatter([p[1] for p in particles(b)], [p[2] for p in particles(b)], color=:black, markersize=0.1, label="")
-    scatter!([s[1]], [s[2]], color=:blue, xlim=(-5,5), ylim=(-5,5), title=t, label="")
+    # scatter([p[1] for p in particles(b)], [p[2] for p in particles(b)], color=:black, markersize=0.1, label="")
+    # scatter!([s[1]], [s[2]], color=:blue, xlim=(-5,5), ylim=(-5,5), title=t, label="")
 end
-write("particles.gif", film)
+# write("particles.gif", film)
