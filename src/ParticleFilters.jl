@@ -50,6 +50,7 @@ immutable ParticleCollection{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
     _probs::Nullable{Dict{T,Float64}} # this is not used now, but may be later
     ParticleCollection() = new(T[], nothing)
+    ParticleCollection(particles) = new(particles, Nullable{Dict{T,Float64}}())
     ParticleCollection(particles, _probs) = new(particles, _probs)
 end
 ParticleCollection{T}(p::AbstractVector{T}) = ParticleCollection{T}(p, nothing)
