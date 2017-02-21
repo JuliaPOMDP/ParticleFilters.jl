@@ -49,6 +49,7 @@ Unweighted particle belief
 immutable ParticleCollection{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
     _probs::Nullable{Dict{T,Float64}} # this is not used now, but may be later
+
     ParticleCollection() = new(T[], nothing)
     ParticleCollection(particles) = new(particles, Nullable{Dict{T,Float64}}())
     ParticleCollection(particles, _probs) = new(particles, _probs)
@@ -61,6 +62,7 @@ immutable WeightedParticleBelief{T} <: AbstractParticleBelief{T}
     weight_sum::Float64
     _probs::Nullable{Dict{T,Float64}} # this is not used now, but may be later
 end
+WeightedParticleBelief{T}(particles::AbstractVector{T}, weights::AbstractVector, weight_sum=sum(weights)) = WeightedParticleBelief{T}(particles, weights, weight_sum, nothing)
 
 ### Belief interface ###
 # see beliefs.jl for implementation
