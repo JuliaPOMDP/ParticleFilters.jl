@@ -24,7 +24,8 @@ export
     particles,
     weight_sum,
     weight,
-    weights
+    weights,
+    obs_weight
 
 export
     pdf,
@@ -95,6 +96,14 @@ Return the weight for particle i.
 """
 function weight end
 
+
+"""
+    obs_weight(pomdp, s, a, sp, o)
+
+Return a weight proportional to the likelihood of receiving observation o from state sp (and s, and a) 
+"""
+obs_weight(pomdp, s, a, sp, o) = pdf(observation(pomdp, s, a, sp), o)    
+
 ### Basic Particle Filter ###
 # implements the POMDPs.jl Updater interface
 # see updater.jl for implementations
@@ -134,8 +143,7 @@ function update{S}(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o)
             all_terminal = false
             sp = generate_s(up.model, s, a, up.rng)
             push!(pm, sp)
-            od = observation(up.model, s, a, sp)
-            push!(wm, pdf(od, o))
+            push!(wm, obs_weight(up.model, s, a, sp, o))
         end
     end
     if all_terminal
