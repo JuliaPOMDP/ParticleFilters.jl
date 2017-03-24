@@ -3,10 +3,9 @@ __precompile__()
 module ParticleFilters
 
 using POMDPs
-using GenerativeModels
 import POMDPs: pdf, mode, update, initialize_belief
 import POMDPs: state_type, isterminal, observation
-import GenerativeModels: generate_s
+import POMDPs: generate_s
 import Base: rand, mean, eltype
 
 export

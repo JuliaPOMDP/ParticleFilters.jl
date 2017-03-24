@@ -22,8 +22,10 @@ function resample{S}(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng
     return ParticleCollection(ps)
 end
 
-function resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, rng::AbstractRNG)
-    ps = Array(eltype(b), r.n)
+resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, rng::AbstractRNG) = resample(r, b, eltype(b), rng)
+
+function resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, eltype::Type, rng::AbstractRNG)
+    ps = Array(eltype, r.n)
     for i in 1:r.n
         ps[i] = rand(rng, b)
     end
