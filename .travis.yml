@@ -12,7 +12,7 @@ notifications:
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia -e 'Pkg.clone(pwd()); Pkg.build("ParticleFilters")'
-  - julia -e 'include(Pkg.dir("ParticleFilters", "test", "build.jl"))'
+    # - julia -e 'include(Pkg.dir("ParticleFilters", "test", "build.jl"))'
   - julia -e 'Pkg.test("ParticleFilters"; coverage=true)'
 after_success:
   # push coverage results to Coveralls
