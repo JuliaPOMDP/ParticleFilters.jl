@@ -6,6 +6,7 @@ using POMDPs
 import POMDPs: pdf, mode, update, initialize_belief
 import POMDPs: state_type, isterminal, observation
 import POMDPs: generate_s
+import POMDPs: implemented
 import Base: rand, mean, eltype
 
 export
@@ -95,13 +96,14 @@ Return the weight for particle i.
 """
 function weight end
 
-
 """
+    obs_weight(pomdp, sp, o)
+    obs_weight(pomdp, a, sp, o)
     obs_weight(pomdp, s, a, sp, o)
 
-Return a weight proportional to the likelihood of receiving observation o from state sp (and s, and a) 
+Return a weight proportional to the likelihood of receiving observation o from state sp (and a and s if they are present). 
 """
-obs_weight(pomdp, s, a, sp, o) = pdf(observation(pomdp, s, a, sp), o)    
+function obs_weight end # implemented in obs_weight
 
 ### Basic Particle Filter ###
 # implements the POMDPs.jl Updater interface
@@ -188,5 +190,6 @@ include("beliefs.jl")
 include("updater.jl")
 include("resamplers.jl")
 include("alias_sample.jl")
+include("obs_weight.jl")
 
 end # module
