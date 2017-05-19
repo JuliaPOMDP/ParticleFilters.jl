@@ -47,9 +47,9 @@ Base.eltype{T}(::Type{AbstractParticleBelief{T}}) = T
 """
 Unweighted particle belief
 """
-immutable ParticleCollection{T} <: AbstractParticleBelief{T}
+type ParticleCollection{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
-    _probs::Nullable{Dict{T,Float64}} # this is not used now, but may be later
+    _probs::Nullable{Dict{T,Float64}} # a cache for the probabilities
 
     ParticleCollection() = new(T[], nothing)
     ParticleCollection(particles) = new(particles, Nullable{Dict{T,Float64}}())
@@ -57,7 +57,7 @@ immutable ParticleCollection{T} <: AbstractParticleBelief{T}
 end
 ParticleCollection{T}(p::AbstractVector{T}) = ParticleCollection{T}(p, nothing)
 
-immutable WeightedParticleBelief{T} <: AbstractParticleBelief{T}
+type WeightedParticleBelief{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
     weights::Vector{Float64}
     weight_sum::Float64

@@ -26,17 +26,18 @@ mean(b::WeightedParticleBelief) = dot(b.weights, b.particles)/weight_sum(b)
 
 function pdf{S}(b::AbstractParticleBelief{S}, s::S)
     if isnull(b._probs)
-        # search through the particle array (very slow)
-        w = 0.0
-        for i in 1:length(b.particles)
-            if b.particles[i] == s
-                w += weight(b,i)
+        # update the cache
+        probs = Dict{S, Float64}()
+        for (i,p) in enumerate(particles(b))
+            if haskey(probs, p)
+                probs[p] += weight(b, i)/weight_sum(b)
+            else
+                probs[p] = weight(b, i)/weight_sum(b)
             end
         end
-        return w/weight_sum(b)
-    else
-        return get(get(b._probs), s, 0.0)
+        b._probs = Nullable(probs)
     end
+    return get(get(b._probs), s, 0.0)
 end
 
 function mode{T}(b::AbstractParticleBelief{T}) # don't know if this is efficient
