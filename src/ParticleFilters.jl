@@ -9,6 +9,8 @@ import POMDPs: generate_s
 import POMDPs: implemented
 import Base: rand, mean, eltype
 
+using StatsBase
+
 export
     AbstractParticleBelief,
     ParticleCollection,
@@ -189,7 +191,6 @@ end
 include("beliefs.jl")
 include("updater.jl")
 include("resamplers.jl")
-include("alias_sample.jl")
 include("obs_weight.jl")
 
 end # module

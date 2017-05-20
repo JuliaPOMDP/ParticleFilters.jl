@@ -4,7 +4,7 @@ function resample{S}(r::ImportanceResampler, b::WeightedParticleBelief{S}, rng::
         warn("Invalid weights in particle filter: weight_sum = $(weight_sum(b))")
     end
     #XXX this may break if StatsBase changes
-    alias_sample!(rng, particles(b), weights(b), weight_sum(b), ps)
+    StatsBase.alias_sample!(rng, particles(b), Weights(weights(b), weight_sum(b)), ps)
     return ParticleCollection(ps)
 end
 
