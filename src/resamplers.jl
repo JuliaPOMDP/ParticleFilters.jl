@@ -1,5 +1,5 @@
 function resample{S}(r::ImportanceResampler, b::WeightedParticleBelief{S}, rng::AbstractRNG)
-    ps = Array(S, r.n)
+    ps = Array{S}(r.n)
     if weight_sum(b) <= 0
         warn("Invalid weights in particle filter: weight_sum = $(weight_sum(b))")
     end
@@ -9,7 +9,7 @@ function resample{S}(r::ImportanceResampler, b::WeightedParticleBelief{S}, rng::
 end
 
 function resample{S}(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG)
-    ps = Array(S, re.n)
+    ps = Array{S}(re.n)
     r = rand(rng)*weight_sum(b)/re.n
     c = weight(b,1)
     i = 1
@@ -28,7 +28,7 @@ end
 resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, rng::AbstractRNG) = resample(r, b, eltype(b), rng)
 
 function resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, eltype::Type, rng::AbstractRNG)
-    ps = Array(eltype, r.n)
+    ps = Array{eltype}(r.n)
     for i in 1:r.n
         ps[i] = rand(rng, b)
     end
