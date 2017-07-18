@@ -3,7 +3,7 @@ __precompile__()
 module ParticleFilters
 
 using POMDPs
-import POMDPs: pdf, mode, update, initialize_belief
+import POMDPs: pdf, mode, update, initialize_belief, iterator
 import POMDPs: state_type, isterminal, observation
 import POMDPs: generate_s
 import POMDPs: implemented
@@ -182,10 +182,10 @@ Sample a new ParticleCollection from b.
 function resample end
 
 ### Convenience Aliases ###
-const SIRParticleFilter{T} = SimpleParticleFilter{T, ImportanceResampler}
+const SIRParticleFilter{T} = SimpleParticleFilter{T, LowVarianceResampler}
 
 function SIRParticleFilter(model, n::Int; rng::AbstractRNG=Base.GLOBAL_RNG)
-    return SimpleParticleFilter(model, ImportanceResampler(n), rng)
+    return SimpleParticleFilter(model, LowVarianceResampler(n), rng)
 end
 
 include("beliefs.jl")

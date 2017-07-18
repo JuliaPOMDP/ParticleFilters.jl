@@ -24,7 +24,7 @@ function rand(rng::AbstractRNG, b::WeightedParticleBelief)
 end
 mean(b::WeightedParticleBelief) = dot(b.weights, b.particles)/weight_sum(b)
 
-function pdf{S}(b::AbstractParticleBelief{S}, s::S)
+function get_probs{S}(b::AbstractParticleBelief{S})
     if isnull(b._probs)
         # update the cache
         probs = Dict{S, Float64}()
@@ -37,39 +37,22 @@ function pdf{S}(b::AbstractParticleBelief{S}, s::S)
         end
         b._probs = Nullable(probs)
     end
-    return get(get(b._probs), s, 0.0)
+    return get(b._probs)
 end
+
+pdf{S}(b::AbstractParticleBelief{S}, s::S) = get(get_probs(b), s, 0.0)
 
 function mode{T}(b::AbstractParticleBelief{T}) # don't know if this is efficient
-    if isnull(b._probs)
-        d = Dict{T, Float64}()
-        best_weight = weight(b,1)
-        most_likely = first(particles(b))
-        ps = particles(b)
-        for i in 2:n_particles(b)
-            s = ps[i]
-            if haskey(d, s)
-                d[s] += weight(b, i)
-            else
-                d[s] = weight(b, i)
-            end
-            if d[s] > best_weight
-                best_weight = d[s]
-                most_likely = s
-            end
+    probs = get_probs(b)
+    best_weight = 0.0
+    most_likely = first(keys(probs))
+    for (s,w) in probs
+        if w > best_weight
+            best_weight = w
+            most_likely = s
         end
-        return most_likely
-    else
-        probs = get(b._probs)
-        best_weight = 0.0
-        most_likely = first(keys(probs))
-        for (s,w) in probs
-            if w > best_weight
-                best_weight = w
-                most_likely = s
-            end
-        end
-        return most_likely
     end
+    return most_likely
 end
 
+iterator(b::AbstractParticleBelief) = keys(get_probs(b))
