@@ -6,7 +6,7 @@ using Base.Test
 import ParticleFilters: obs_weight
 import POMDPs: observation
 
-immutable P <: POMDP{Void, Void, Void} end
+struct P <: POMDP{Void, Void, Void} end
 
 @test !@implemented obs_weight(::P, ::Void, ::Void, ::Void, ::Void)
 @test !@implemented obs_weight(::P, ::Void, ::Void, ::Void)

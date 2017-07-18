@@ -41,7 +41,7 @@ export
     isterminal,
     state_type
 
-abstract AbstractParticleBelief{T}
+abstract type AbstractParticleBelief{T} end
 Base.eltype{T}(::Type{AbstractParticleBelief{T}}) = T
 
 ### Belief types ###
@@ -49,17 +49,17 @@ Base.eltype{T}(::Type{AbstractParticleBelief{T}}) = T
 """
 Unweighted particle belief
 """
-type ParticleCollection{T} <: AbstractParticleBelief{T}
+mutable struct ParticleCollection{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
     _probs::Nullable{Dict{T,Float64}} # a cache for the probabilities
 
-    ParticleCollection() = new(T[], nothing)
-    ParticleCollection(particles) = new(particles, Nullable{Dict{T,Float64}}())
-    ParticleCollection(particles, _probs) = new(particles, _probs)
+    ParticleCollection{T}() where {T} = new(T[], nothing)
+    ParticleCollection{T}(particles) where {T} = new(particles, Nullable{Dict{T,Float64}}())
+    ParticleCollection{T}(particles, _probs) where {T} = new(particles, _probs)
 end
 ParticleCollection{T}(p::AbstractVector{T}) = ParticleCollection{T}(p, nothing)
 
-type WeightedParticleBelief{T} <: AbstractParticleBelief{T}
+mutable struct WeightedParticleBelief{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
     weights::Vector{Float64}
     weight_sum::Float64
@@ -103,7 +103,7 @@ function weight end
     obs_weight(pomdp, a, sp, o)
     obs_weight(pomdp, s, a, sp, o)
 
-Return a weight proportional to the likelihood of receiving observation o from state sp (and a and s if they are present). 
+Return a weight proportional to the likelihood of receiving observation o from state sp (and a and s if they are present).
 """
 function obs_weight end # implemented in obs_weight
 
@@ -117,14 +117,14 @@ A particle filter that calculates relative weights for each particle based on ob
 
 The resample field may be a function or an object that controls resampling. If it is a function `f`, `f(b, rng)` will be called. If it is an object, `o`, `resample(o, b, rng)` will be called, where `b` is a `WeightedParticleBelief`.
 """
-type SimpleParticleFilter{S,R} <: Updater{ParticleCollection{S}}
+mutable struct SimpleParticleFilter{S,R} <: Updater
     model
     resample::R
     rng::AbstractRNG
     _particle_memory::Vector{S}
     _weight_memory::Vector{Float64}
 
-    SimpleParticleFilter(model, resample, rng) = new(model, resample, rng, state_type(model)[], Float64[])
+    SimpleParticleFilter{S, R}(model, resample, rng) where {S,R} = new(model, resample, rng, state_type(model)[], Float64[])
 end
 function SimpleParticleFilter{R}(model, resample::R, rng::AbstractRNG)
     SimpleParticleFilter{state_type(model),R}(model, resample, rng)
@@ -163,12 +163,12 @@ isterminal(model, s) = false
 observation(model, s, a, sp) = observation(model, a, sp)
 
 ### Resamplers ###
-immutable ImportanceResampler
+struct ImportanceResampler
     n::Int
 end
 
 # low variance sampling algorithm on page 110 of Probabilistic Robotics by Thrun Burgard and Fox
-immutable LowVarianceResampler
+struct LowVarianceResampler
     n::Int
 end
 
@@ -182,7 +182,7 @@ Sample a new ParticleCollection from b.
 function resample end
 
 ### Convenience Aliases ###
-typealias SIRParticleFilter{T} SimpleParticleFilter{T, LowVarianceResampler}
+const SIRParticleFilter{T} = SimpleParticleFilter{T, LowVarianceResampler}
 
 function SIRParticleFilter(model, n::Int; rng::AbstractRNG=Base.GLOBAL_RNG)
     return SimpleParticleFilter(model, LowVarianceResampler(n), rng)
