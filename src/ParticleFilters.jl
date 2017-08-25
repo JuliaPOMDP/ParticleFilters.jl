@@ -7,7 +7,8 @@ import POMDPs: pdf, mode, update, initialize_belief, iterator
 import POMDPs: state_type, isterminal, observation
 import POMDPs: generate_s
 import POMDPs: implemented
-import Base: rand, mean, eltype
+import POMDPs: sampletype
+import Base: rand, mean
 
 using StatsBase
 
@@ -42,7 +43,11 @@ export
     state_type
 
 abstract type AbstractParticleBelief{T} end
+
+# DEPRECATED: remove in future release
 Base.eltype{T}(::Type{AbstractParticleBelief{T}}) = T
+
+sampletype(::Type{AbstractParticleBelief{T}}) where T = T
 
 ### Belief types ###
 
