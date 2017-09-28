@@ -92,7 +92,7 @@ function particles end
 """
     weight_sum(b::AbstractParticleBelief)
 
-Return the sum of the withs of the particle collection.
+Return the sum of the weights of the particle collection.
 """
 function weight_sum end
 
