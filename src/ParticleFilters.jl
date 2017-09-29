@@ -122,17 +122,17 @@ A particle filter that calculates relative weights for each particle based on ob
 
 The resample field may be a function or an object that controls resampling. If it is a function `f`, `f(b, rng)` will be called. If it is an object, `o`, `resample(o, b, rng)` will be called, where `b` is a `WeightedParticleBelief`.
 """
-mutable struct SimpleParticleFilter{S,R} <: Updater
+mutable struct SimpleParticleFilter{S,R,RNG<:AbstractRNG} <: Updater
     model
     resample::R
-    rng::AbstractRNG
+    rng::RNG
     _particle_memory::Vector{S}
     _weight_memory::Vector{Float64}
 
-    SimpleParticleFilter{S, R}(model, resample, rng) where {S,R} = new(model, resample, rng, state_type(model)[], Float64[])
+    SimpleParticleFilter{S, R, RNG}(model, resample, rng) where {S,R,RNG} = new(model, resample, rng, state_type(model)[], Float64[])
 end
 function SimpleParticleFilter{R}(model, resample::R, rng::AbstractRNG)
-    SimpleParticleFilter{state_type(model),R}(model, resample, rng)
+    SimpleParticleFilter{state_type(model),R,typeof(rng)}(model, resample, rng)
 end
 SimpleParticleFilter(model, resample; rng::AbstractRNG=Base.GLOBAL_RNG) = SimpleParticleFilter(model, resample, rng)
 
@@ -159,6 +159,11 @@ function update{S}(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o)
         # TODO: create a mechanism to handle this failure
     end
     return resample(up.resample, WeightedParticleBelief{S}(pm, wm, sum(wm), nothing), up.rng)
+end
+
+function Base.srand(f::SimpleParticleFilter, seed)
+    srand(f.rng, seed)
+    return f
 end
 
 

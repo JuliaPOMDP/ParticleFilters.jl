@@ -26,6 +26,7 @@ include("example.jl")
 
 p = TigerPOMDP()
 filter = SIRParticleFilter(p, 100)
+srand(filter, 47)
 b = initialize_belief(filter, initial_state_distribution(p))
 m = mode(b)
 m = mean(b)
