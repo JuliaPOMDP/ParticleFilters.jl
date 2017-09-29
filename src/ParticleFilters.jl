@@ -25,8 +25,10 @@ export
     resample,
     n_particles,
     particles,
+    weighted_particles,
     weight_sum,
     weight,
+    particle,
     weights,
     obs_weight
 
@@ -85,9 +87,16 @@ function n_particles end
 """
     particles(b::AbstractParticleBelief)
 
-Return a vector of the particles.
+Return an iterator over the particles.
 """
 function particles end
+
+"""
+    weighted_particles(b::AbstractParticleBelief)
+
+Return an iterator over particle-weight pairs.
+"""
+function weighted_particles end
 
 """
     weight_sum(b::AbstractParticleBelief)
@@ -102,6 +111,14 @@ function weight_sum end
 Return the weight for particle i.
 """
 function weight end
+
+
+"""
+    particle(b::AbstractParticleBelief, i)
+
+Return particle i.
+"""
+function particle end
 
 """
     obs_weight(pomdp, sp, o)

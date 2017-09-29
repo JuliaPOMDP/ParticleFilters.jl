@@ -1,15 +1,19 @@
 
 n_particles(b::ParticleCollection) = length(b.particles)
 particles(p::ParticleCollection) = p.particles
+weighted_particles(p::ParticleCollection) = (p=>1.0/length(p.particles) for p in p.particles)
 weight_sum(::ParticleCollection) = 1.0
 weight(b::ParticleCollection, i::Int) = 1.0/length(b.particles)
+particle(b::ParticleCollection, i::Int) = b.particles[i]
 rand(rng::AbstractRNG, b::ParticleCollection) = b.particles[rand(rng, 1:length(b.particles))]
 mean(b::ParticleCollection) = sum(b.particles)/length(b.particles)
 
 n_particles(b::WeightedParticleBelief) = length(b.particles)
 particles(p::WeightedParticleBelief) = p.particles
+weighted_particles(b::WeightedParticleBelief) = (b.particles[i]=>b.weights[i] for i in 1:length(b.particles))
 weight_sum(b::WeightedParticleBelief) = b.weight_sum
 weight(b::WeightedParticleBelief, i::Int) = b.weights[i]
+particle(b::WeightedParticleBelief, i::Int) = b.particles[i]
 weights(b::WeightedParticleBelief) = b.weights
 
 function rand(rng::AbstractRNG, b::WeightedParticleBelief)
