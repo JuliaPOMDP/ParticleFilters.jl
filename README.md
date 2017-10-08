@@ -22,12 +22,6 @@ will return a particle collection representing the belief at the next time step.
 Pkg.add("ParticleFilters")
 ```
 
-or
-
-```julia
-Pkg.clone("https://github.com/JuliaPOMDP/ParticleFilters.jl")
-```
-
 # Usage
 
 ParticleFilters.jl is designed to be used with [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl), and should work with most POMDPs.jl models out of the box, for example with the [LightDarkPOMDP](https://github.com/zsunberg/LightDarkPOMDPs.jl).
