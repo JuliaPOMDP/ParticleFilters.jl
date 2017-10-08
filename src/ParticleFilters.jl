@@ -19,7 +19,8 @@ export
     SimpleParticleFilter,
     ImportanceResampler,
     LowVarianceResampler,
-    SIRParticleFilter
+    SIRParticleFilter,
+    UnweightedParticleFilter
 
 export
     resample,
@@ -49,7 +50,7 @@ abstract type AbstractParticleBelief{T} end
 # DEPRECATED: remove in future release
 Base.eltype{T}(::Type{AbstractParticleBelief{T}}) = T
 
-sampletype(::Type{AbstractParticleBelief{T}}) where T = T
+sampletype(::Type{B}) where B<:AbstractParticleBelief{T} where T = T
 
 ### Belief types ###
 
@@ -215,6 +216,7 @@ function SIRParticleFilter(model, n::Int; rng::AbstractRNG=Base.GLOBAL_RNG)
     return SimpleParticleFilter(model, LowVarianceResampler(n), rng)
 end
 
+include("unweighted.jl")
 include("beliefs.jl")
 include("updater.jl")
 include("resamplers.jl")

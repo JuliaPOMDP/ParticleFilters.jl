@@ -1,4 +1,3 @@
-
 n_particles(b::ParticleCollection) = length(b.particles)
 particles(p::ParticleCollection) = p.particles
 weighted_particles(p::ParticleCollection) = (p=>1.0/length(p.particles) for p in p.particles)
