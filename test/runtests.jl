@@ -39,3 +39,7 @@ ps = initialize_belief(uf, initial_state_distribution(p))
 a = rand(rng, actions(p))
 sp, o = generate_so(p, rand(rng, ps), a, rng)
 bp = update(uf, ps, a, o)
+
+wp1 = collect(weighted_particles(ParticleCollection([1,2])))
+wp2 = collect(weighted_particles(WeightedParticleBelief([1,2], [0.5, 0.5])))
+@test wp1 == wp2

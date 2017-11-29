@@ -1,6 +1,6 @@
 n_particles(b::ParticleCollection) = length(b.particles)
 particles(p::ParticleCollection) = p.particles
-weighted_particles(p::ParticleCollection) = (p=>1.0/length(p.particles) for p in p.particles)
+weighted_particles(p::ParticleCollection) = (s=>1.0/length(p.particles) for s in p.particles)
 weight_sum(::ParticleCollection) = 1.0
 weight(b::ParticleCollection, i::Int) = 1.0/length(b.particles)
 particle(b::ParticleCollection, i::Int) = b.particles[i]
