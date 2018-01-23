@@ -2,7 +2,7 @@ using ParticleFilters
 using Distributions
 using StaticArrays
 
-immutable DblIntegrator2D 
+struct DblIntegrator2D 
     W::Matrix{Float64} # Process noise covariance
     V::Matrix{Float64} # Observation noise covariance
     dt::Float64        # Time step
@@ -14,8 +14,7 @@ function ParticleFilters.generate_s(model::DblIntegrator2D, s, a, rng::AbstractR
     dt = model.dt
     A = [1.0 0.0 dt 0.0; 0.0 1.0 0.0 dt; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0]
     B = [0.5*dt^2 0.0; 0.0 0.5*dt^2; dt 0.0; 0.0 dt]
-    proc_noise = ctranspose(chol(model.W))*randn(rng, 4)
-    return A*s + B*a + proc_noise
+    return A*s + B*a + rand(rng, MvNormal(model.W))
 end
 
 # returns the observation distribution for state sp (and action a)

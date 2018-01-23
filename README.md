@@ -24,36 +24,9 @@ Pkg.add("ParticleFilters")
 
 # Usage
 
-ParticleFilters.jl is designed to be used with [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl), and should work with most POMDPs.jl models out of the box, for example with the [LightDarkPOMDP](https://github.com/zsunberg/LightDarkPOMDPs.jl).
+ParticleFilters.jl uses a simple interface consisting of the functions [`generate_s(model, state, control, rng)`](http://juliapomdp.github.io/POMDPs.jl/latest/api/#POMDPs.generate_s) and [`observation(model, control, state)`](http://juliapomdp.github.io/POMDPs.jl/latest/api/#POMDPs.observation) borrowed from [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl). `generate_s()` should return the next state given the current state and control input; `observation` should return the observation distribution for a state. If it is difficult to write the observation distribution, the shortcut function `ParticleFilters.obs_weight(model, control, state, observation)` that returns the weight for the observation given the state and control can be implemented instead.
 
-```julia
-using ParticleFilters
-using LightDarkPOMDPs
-using POMDPToolbox
-using Reel
-using Plots
-
-pomdp = LightDark2D()
-filter = SimpleParticleFilter(pomdp, LowVarianceResampler(1000))
-
-hist = sim(pomdp, updater=filter, max_steps=50) do b::ParticleCollection
-    m = mean(b)
-    return 0.15*[m[2], -m[1]]
-end
-
-film = roll(fps=2, duration=length(hist)/2) do t, dt
-    plot(pomdp, xlim=(-7,7), ylim=(-6,6), aspect_ratio=:equal)
-    v = view(hist, 1:Int(2*t+1)); plot!(v)
-    b = belief_hist(v)[end]; plot!(b, label="belief")
-end
-write("lightdark_particle.gif", film)
-```
-
-This should produce a gif similar to the one below.
-
-![lightdark_particle.gif](https://github.com/zsunberg/ParticleFilters.jl/raw/master/img/lightdark_particle.gif)
-
-You may not wish to define the entire POMDPs interface for your model. In that case, you can still use the particle filter if you just define `generate_s()` and `observation()` for your model. For example, a double integrator model (written for clarity, not speed) is shown below.
+For example, a double integrator model (written for clarity, not speed) is shown below.
 
 ```julia
 using ParticleFilters
@@ -62,7 +35,7 @@ using StaticArrays
 using Reel
 using Plots
 
-immutable DblIntegrator2D 
+struct DblIntegrator2D 
     W::Matrix{Float64} # Process noise covariance
     V::Matrix{Float64} # Observation noise covariance
     dt::Float64        # Time step
@@ -74,8 +47,7 @@ function ParticleFilters.generate_s(model::DblIntegrator2D, s, a, rng::AbstractR
     dt = model.dt
     A = [1.0 0.0 dt 0.0; 0.0 1.0 0.0 dt; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0]
     B = [0.5*dt^2 0.0; 0.0 0.5*dt^2; dt 0.0; 0.0 dt]
-    proc_noise = ctranspose(chol(model.W))*randn(rng, 4)
-    return A*s + B*a + proc_noise
+    return A*s + B*a + rand(rng, MvNormal(model.W))
 end
 
 # returns the observation distribution for state sp (and action a)
@@ -105,3 +77,32 @@ write("particles.gif", film)
 ```
 
 This will produce the gif at the top of the page. Note that a Kalman Filter would have been much more appropriate for this linear-Gaussian case.
+
+ParticleFilters.jl will work out of the box with [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl) models, for example with the [LightDarkPOMDP](https://github.com/zsunberg/LightDarkPOMDPs.jl).
+
+```julia
+using ParticleFilters
+using LightDarkPOMDPs
+using POMDPToolbox
+using Reel
+using Plots
+
+pomdp = LightDark2D()
+filter = SimpleParticleFilter(pomdp, LowVarianceResampler(1000))
+
+hist = sim(pomdp, updater=filter, max_steps=50) do b::ParticleCollection
+    m = mean(b)
+    return 0.15*[m[2], -m[1]]
+end
+
+film = roll(fps=2, duration=length(hist)/2) do t, dt
+    plot(pomdp, xlim=(-7,7), ylim=(-6,6), aspect_ratio=:equal)
+    v = view(hist, 1:Int(2*t+1)); plot!(v)
+    b = belief_hist(v)[end]; plot!(b, label="belief")
+end
+write("lightdark_particle.gif", film)
+```
+
+This should produce a gif similar to the one below.
+
+![lightdark_particle.gif](https://github.com/zsunberg/ParticleFilters.jl/raw/master/img/lightdark_particle.gif)
