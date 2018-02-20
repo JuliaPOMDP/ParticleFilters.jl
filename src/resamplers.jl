@@ -25,6 +25,14 @@ function resample{S}(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng
     return ParticleCollection(ps)
 end
 
+function resample{S}(re::LowVarianceResampler, b::ParticleCollection{S}, rng::AbstractRNG)
+    r = rand(rng)*n_particles(b)/re.n
+    chunk = n_particles(b)/re.n
+    inds = ceil.(Int, chunk*(0:re.n-1)+r)
+    ps = particles(b)[inds]
+    return ParticleCollection(ps)
+end
+
 resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, rng::AbstractRNG) = resample(r, b, sampletype(b), rng)
 
 function resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, sampletype::Type, rng::AbstractRNG)

@@ -25,7 +25,7 @@ observation(::P, ::Void) = nothing
 include("example.jl")
 
 p = TigerPOMDP()
-filter = SIRParticleFilter(p, 100)
+filter = SIRParticleFilter(p, 10000)
 srand(filter, 47)
 b = @inferred initialize_belief(filter, initial_state_distribution(p))
 m = @inferred mode(b)
@@ -33,12 +33,18 @@ m = @inferred mean(b)
 it = @inferred iterator(b)
 @inferred weighted_particles(b)
 
-rs = LowVarianceResampler(100)
+rs = LowVarianceResampler(1000)
 @inferred resample(rs, b, MersenneTwister(3))
 ps = particles(b)
 ws = ones(length(ps))
 @inferred resample(rs, WeightedParticleBelief(ps, ws, sum(ws)), MersenneTwister(3))
 @inferred resample(rs, WeightedParticleBelief{Bool}(ps, ws, sum(ws), nothing), MersenneTwister(3))
+
+# test that the special method for ParticleCollections works
+b = ParticleCollection(1:1000)
+rb1 = @inferred resample(rs, b, MersenneTwister(3))
+rb2 = @inferred resample(rs, WeightedParticleBelief(particles(b), ones(n_particles(b))), MersenneTwister(3))
+@test all(particles(rb1).==particles(rb2))
 
 rng = MersenneTwister(47)
 uf = UnweightedParticleFilter(p, 1000, rng)
