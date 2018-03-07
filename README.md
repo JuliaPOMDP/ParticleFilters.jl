@@ -18,7 +18,7 @@ Pkg.add("ParticleFilters")
 
 # Usage
 
-ParticleFilters.jl can be be used with or without the [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl) package, so usage instructions are divided into two sections. First [usage without POMDPs.jl](#usage-without-pomdpsjl) is described, then an example of [usage with POMDPs.jl](#usage-with-pomdpsjl), and finally a list of the different [filters and beliefs](#filters-and-beliefs) along with brief discussion of [random number generation](#random-number-generation) is given.
+ParticleFilters.jl can be be used with or without the [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl) package, so usage instructions are divided into two sections. First [usage without POMDPs.jl](#usage-without-pomdpsjl) is described, then an example of [usage with POMDPs.jl](#usage-with-pomdpsjl), and finally a list of the different [filters and beliefs](#types-of-filters-and-beliefs) along with brief discussion of [random number generation](#random-number-generation) is given.
 
 ## Usage without POMDPs.jl
 
@@ -83,9 +83,9 @@ end
 write("particles.gif", film)
 ```
 
-This will produce the gif at the top of the page. Note that this could be sped up by using immutable arrays from StaticArrays.jl and a Kalman Filter would have been much more appropriate for this linear-Gaussian case anyways.
+This will produce the gif at the top of the page. Note that this could be sped up by using immutable arrays from StaticArrays.jl, and a Kalman Filter would have been much more appropriate for this linear-Gaussian case anyways.
 
-## With POMDPs.jl
+## Usage with POMDPs.jl
 
 ParticleFilters.jl will work out of the box with [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl) models, for example with the [LightDarkPOMDP](https://github.com/zsunberg/LightDarkPOMDPs.jl).
 
@@ -118,5 +118,28 @@ This should produce a gif similar to the one below.
 
 ## Types of Filters and Beliefs
 
+### Beliefs
+
+The package provides two belief types, `ParticleCollection`, which is simply a list of states without any weights, and `WeightedParticleBelief`, which contains a vector of states and a vector of the corresponding weights. The weights in a `WeightedParticleBelief` `b` sum to `weight_sum(b)`, which is not necessarily one.
+
+The following functions are defined for both types and constitute the interface for a particle belief `b`. Access the docstrings with `?` to see what they do.
+
+- `n_particles(b)`
+- `particles(b)`
+- `weighted_particles(b)`
+- `weight_sum(b)`
+- `weights(b)`
+- `weight(b, i)`
+- `particle(b, i)`
+- `rand([rng], b)`
+- `iterator(b)`
+- `pdf(b, s)`
+- `mean(b)`
+- `mode(b)`
+- `sampletype(b)`
+
+### Filters
+
+The basic particle filter type is `SimpleParticleFilter`. Resampling behavior can be controlled by specifying the resampler. 
 
 ## Random Number Generation

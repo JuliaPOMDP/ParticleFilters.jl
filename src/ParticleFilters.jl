@@ -134,7 +134,7 @@ function obs_weight end # implemented in obs_weight
 # implements the POMDPs.jl Updater interface
 # see updater.jl for implementations
 """
-    SimpleParticleFilter
+    SimpleParticleFilter(model, resample, rng)
 
 A particle filter that calculates relative weights for each particle based on observation likelihood, and then resamples.
 
