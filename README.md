@@ -4,19 +4,13 @@
 [![codecov.io](http://codecov.io/github/JuliaPOMDP/ParticleFilters.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaPOMDP/ParticleFilters.jl?branch=master)
 <!--[![Coverage Status](https://coveralls.io/repos/JuliaPOMDP/ParticleFilters.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/JuliaPOMDP/ParticleFilters.jl?branch=master)-->
 
-![particles.gif](https://github.com/JuliaPOMDP/ParticleFilters.jl/raw/master/img/particles.gif)
+![particles.gif](/img/particles.gif)
 
 This package rovides some simple generic particle filters, and may serve as a template for making custom particle filters and other updaters for POMDPs.jl.
 
-The function `update(filter, b, a, o)` where 
-- `filter` is a particle filter from this package, 
-- `b` is a belief about the system state (for example a particle collection),
-- `a` is a control input, and 
-- `o` is an observation
-
-will return a particle collection representing the belief at the next time step. The resampling strategy can be controlled by specifying a custom function or object to resample.
-
 # Installation
+
+In Julia:
 
 ```julia
 Pkg.add("ParticleFilters")
@@ -24,14 +18,27 @@ Pkg.add("ParticleFilters")
 
 # Usage
 
-ParticleFilters.jl uses a simple interface consisting of the functions [`generate_s(model, state, control, rng)`](http://juliapomdp.github.io/POMDPs.jl/latest/api/#POMDPs.generate_s) and [`observation(model, control, state)`](http://juliapomdp.github.io/POMDPs.jl/latest/api/#POMDPs.observation) borrowed from [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl). `generate_s()` should return the next state given the current state and control input; `observation` should return the observation distribution for a state. If it is difficult to write the observation distribution, the shortcut function `ParticleFilters.obs_weight(model, control, state, observation)` that returns the weight for the observation given the state and control can be implemented instead.
+ParticleFilters.jl can be be used with or without the [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl) package, so usage instructions are divided into two sections. First [usage without POMDPs.jl](#usage-without-pomdpsjl) is described, then an example of [usage with POMDPs.jl](#usage-with-pomdpsjl), and finally a list of the different [filters and beliefs](#filters-and-beliefs) along with brief discussion of [random number generation](#random-number-generation) is given.
+
+## Usage without POMDPs.jl
+
+ParticleFilters.jl uses a simple interface consisting of the functions [`generate_s(model, state, control, rng)`](http://juliapomdp.github.io/POMDPs.jl/latest/api/#POMDPs.generate_s) and [`observation(model, control, state)`](http://juliapomdp.github.io/POMDPs.jl/latest/api/#POMDPs.observation) borrowed from [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl). `generate_s()` should return the next state given the current state and control input; `observation()` should return the observation distribution for a state. If it is difficult to write the observation distribution, the shortcut function `ParticleFilters.obs_weight(model, control, state, observation)` that returns the weight (pdf) for the observation given the state and control can be implemented instead.
+
+Once these two functions have been implemented to define the system dynamics and observation model, the function `update(filter, b, a, o)` can then be used to carry out a single update of the particle filter. It will return a `ParticleCollection` representing the belief at the next time step.
+
+The arguments are
+- `filter`: a particle filter from this package
+- `b`: a belief about the system state (for example a `ParticleCollection` or a distribution from Distributions.jl),
+- `a`: a control input
+- `o`: an observation or measurement
+
+`a` and `o` can be any type (but must of course be consistent with `generate_s` and `observation`. See [filters and beliefs](#filters-and-beliefs) for more information about.
 
 For example, a double integrator model (written for clarity, not speed) is shown below.
 
 ```julia
 using ParticleFilters
 using Distributions
-using StaticArrays
 using Reel
 using Plots
 
@@ -43,15 +50,15 @@ end
 # state is [x, y, xdot, ydot];
 
 # generates a new state from current state s and control a
-function ParticleFilters.generate_s(model::DblIntegrator2D, s, a, rng::AbstractRNG)
+function ParticleFilters.generate_s(model::DblIntegrator2D, s, u, rng::AbstractRNG)
     dt = model.dt
     A = [1.0 0.0 dt 0.0; 0.0 1.0 0.0 dt; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0]
     B = [0.5*dt^2 0.0; 0.0 0.5*dt^2; dt 0.0; 0.0 dt]
-    return A*s + B*a + rand(rng, MvNormal(model.W))
+    return A*s + B*u + rand(rng, MvNormal(model.W))
 end
 
 # returns the observation distribution for state sp (and action a)
-function ParticleFilters.observation(model::DblIntegrator2D, a, sp)
+function ParticleFilters.observation(model::DblIntegrator2D, u, sp)
     return MvNormal(sp[1:2], model.V)
 end
 
@@ -65,7 +72,7 @@ s = [0.0, 1.0, 1.0, 0.0]
 film = roll(fps=10, duration=10) do t, dt
     global b, s; print(".")
     m = mean(b)
-    a = [-m[1], -m[2]] # try to orbit the origin
+    u = [-m[1], -m[2]] # try to orbit the origin
     s = generate_s(model, s, a, rng)
     o = rand(observation(model, a, s))
     b = update(filter, b, a, o)
@@ -76,7 +83,9 @@ end
 write("particles.gif", film)
 ```
 
-This will produce the gif at the top of the page. Note that a Kalman Filter would have been much more appropriate for this linear-Gaussian case.
+This will produce the gif at the top of the page. Note that this could be sped up by using immutable arrays from StaticArrays.jl and a Kalman Filter would have been much more appropriate for this linear-Gaussian case anyways.
+
+## With POMDPs.jl
 
 ParticleFilters.jl will work out of the box with [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl) models, for example with the [LightDarkPOMDP](https://github.com/zsunberg/LightDarkPOMDPs.jl).
 
@@ -105,4 +114,9 @@ write("lightdark_particle.gif", film)
 
 This should produce a gif similar to the one below.
 
-![lightdark_particle.gif](https://github.com/zsunberg/ParticleFilters.jl/raw/master/img/lightdark_particle.gif)
+![lightdark_particle.gif](/img/lightdark_particle.gif)
+
+## Types of Filters and Beliefs
+
+
+## Random Number Generation
