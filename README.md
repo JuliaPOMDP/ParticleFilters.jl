@@ -18,7 +18,7 @@ Pkg.add("ParticleFilters")
 
 # Usage
 
-ParticleFilters.jl can be be used with or without the [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl) package, so usage instructions are divided into two sections. First [usage without POMDPs.jl](#usage-without-pomdpsjl) is described, then an example of [usage with POMDPs.jl](#usage-with-pomdpsjl), and finally a list of the different [filters and beliefs](#types-of-filters-and-beliefs) along with brief discussion of [random number generation](#random-number-generation) is given.
+ParticleFilters.jl can be be used with or without the [POMDPs.jl](https://github.com/JuliaPOMDP/POMDPs.jl) package, so usage instructions are divided into two sections. First [usage without POMDPs.jl](#usage-without-pomdpsjl) is described, then an example of [usage with POMDPs.jl](#usage-with-pomdpsjl), and finally a list of the different [filters and beliefs](#types-of-filters-and-beliefs) along with brief discussion of [random number generation and resampling](#resampling) is given.
 
 ## Usage without POMDPs.jl
 
@@ -140,6 +140,24 @@ The following functions are defined for both types and constitute the interface 
 
 ### Filters
 
-The basic particle filter type is `SimpleParticleFilter`. Resampling behavior can be controlled by specifying the resampler. 
+The basic particle filter type is `SimpleParticleFilter`. The constructor takes two arguments, a model and a resampler (and an optional random number generator). Resampling behavior including the number of particles can be controlled by specifying the resampler (see below). The filter works in three steps
 
-## Random Number Generation
+1. Sample states from the input belief
+2. Simulate each state forward 1 time step
+3. Weight each state according to it's likelihood
+4. Resample from the weighted state collection and return a `ParticleCollection`
+
+Most users should start out with the `SIRParticleFilter` (SIR = sequential importance resampling), which, in code terms, is an alias for a `SimpleParticleFilter` with a `LowVarianceResampler`. The constructor takes two arguments, a model and the number of particles (and optionally a random number generator).
+
+There is also an `UnweightedParticleFilter` that only accepts particles that generate exactly the same observation as the true observation from the environment when simulated. This usually will not work in practice since it is very susceptible to particle depletion, but is included as a default fallback for cases when `obs_weight` is not implemented.
+
+## Resampling
+
+Naive resampling techniques can easily accidentally result in O(n²) algorithms. Fortunately there are lower-complexity methods for drawing a large number of samples from a distribution. These are implemented in the two resamplers included in the package:
+
+- The `ImportanceResampler` uses the `alias_resample!` method from `StatsBase.jl`, which generates independent samples in O(n log(n)) time
+- The `LowVarianceResampler` uses the method described on p. 110 of *Probabilistic Robotics* by Thrun, Bergard, and Fox to generate representative samples in O(n) time.
+
+# Dealing with particle depletion and other problems
+
+Particle filters generally require domain-specific tricks and modifications to overcome problems such as particle depletion. As such, ParticleFilters.jl is designed to act as a template for you to be able to create your own filters. Have a look at the default `update()` implementation in [src/ParticleFilters.jl](src/ParticleFilters.jl), and pick and choose which tools (for example the resamplers or the belief types) you use to create your own fast and efficient filters. An example of a more robust filter is located here: https://github.com/zsunberg/ContinuousPOMDPTreeSearchExperiments.jl/blob/master/src/updaters.jl#L54
