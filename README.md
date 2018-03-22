@@ -140,7 +140,7 @@ The following functions are defined for both types and constitute the interface 
 
 ### Filters
 
-The basic particle filter type is `SimpleParticleFilter`. The constructor takes two arguments, a model and a resampler (and an optional random number generator). Resampling behavior including the number of particles can be controlled by specifying the resampler (see below). The filter works in three steps
+The basic particle filter type is `SimpleParticleFilter`. The constructor takes two arguments, a model and a resampler (and an optional random number generator). Resampling behavior including the number of particles can be controlled by specifying the resampler (see below). The filter works in four steps
 
 1. Sample states from the input belief
 2. Simulate each state forward 1 time step
