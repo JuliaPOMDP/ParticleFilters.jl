@@ -6,10 +6,12 @@ using POMDPs
 import POMDPs: pdf, mode, update, initialize_belief, iterator
 import POMDPs: state_type, isterminal, observation
 import POMDPs: generate_s
+import POMDPs: action, value
 import POMDPs: implemented
 import POMDPs: sampletype
 import Base: rand, mean
 
+using POMDPToolbox
 using StatsBase
 
 export
@@ -221,5 +223,6 @@ include("beliefs.jl")
 include("updater.jl")
 include("resamplers.jl")
 include("obs_weight.jl")
+include("policies.jl")
 
 end # module
