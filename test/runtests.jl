@@ -1,6 +1,7 @@
 using ParticleFilters
 using POMDPs
 using POMDPModels
+using POMDPToolbox
 using Base.Test
 
 import ParticleFilters: obs_weight
@@ -43,3 +44,16 @@ bp = update(uf, ps, a, o)
 wp1 = collect(weighted_particles(ParticleCollection([1,2])))
 wp2 = collect(weighted_particles(WeightedParticleBelief([1,2], [0.5, 0.5])))
 @test wp1 == wp2
+
+# test specific method for alpha vector policies and particle beliefs
+pomdp = BabyPOMDP()
+# these values were gotten from FIB.jl
+alphas = [-29.4557 -36.5093; -19.4557 -16.0629]
+policy = AlphaVectorPolicy(pomdp, alphas)
+
+# initial belief is 100% confidence in baby being hungry
+b = ParticleCollection([true for i=1:100])
+
+# because baby is hungry, policy should feed (return true)
+@test action(policy, b) == true
+@test isapprox(value(policy, b), -29.4557)
