@@ -10,6 +10,7 @@ import POMDPs: implemented
 import POMDPs: sampletype
 import Base: rand, mean
 
+using POMDPToolbox
 using StatsBase
 
 export
