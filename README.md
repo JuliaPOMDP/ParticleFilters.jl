@@ -1,6 +1,6 @@
 # ParticleFilters
 
-[![Build Status](https://travis-ci.org/JuliaPOMDP/ParticleFilters.jl.svg)](https://travis-ci.org/JuliaPOMDP/ParticleFilters.jl)
+[![Build Status](https://travis-ci.org/JuliaPOMDP/ParticleFilters.jl.svg?branch=master)](https://travis-ci.org/JuliaPOMDP/ParticleFilters.jl?branch=master)
 [![codecov.io](http://codecov.io/github/JuliaPOMDP/ParticleFilters.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaPOMDP/ParticleFilters.jl?branch=master)
 <!--[![Coverage Status](https://coveralls.io/repos/JuliaPOMDP/ParticleFilters.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/JuliaPOMDP/ParticleFilters.jl?branch=master)-->
 
