@@ -12,6 +12,7 @@ import POMDPs: sampletype
 import Base: rand, mean
 
 using POMDPToolbox
+import POMDPToolbox: obs_weight
 using StatsBase
 
 export
@@ -123,15 +124,6 @@ Return particle i.
 """
 function particle end
 
-"""
-    obs_weight(pomdp, sp, o)
-    obs_weight(pomdp, a, sp, o)
-    obs_weight(pomdp, s, a, sp, o)
-
-Return a weight proportional to the likelihood of receiving observation o from state sp (and a and s if they are present).
-"""
-function obs_weight end # implemented in obs_weight
-
 ### Basic Particle Filter ###
 # implements the POMDPs.jl Updater interface
 # see updater.jl for implementations
@@ -222,7 +214,6 @@ include("unweighted.jl")
 include("beliefs.jl")
 include("updater.jl")
 include("resamplers.jl")
-include("obs_weight.jl")
 include("policies.jl")
 
 end # module
