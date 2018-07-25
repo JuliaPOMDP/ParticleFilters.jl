@@ -140,17 +140,17 @@ A particle filter that calculates relative weights for each particle based on ob
 
 The resample field may be a function or an object that controls resampling. If it is a function `f`, `f(b, rng)` will be called. If it is an object, `o`, `resample(o, b, rng)` will be called, where `b` is a `WeightedParticleBelief`.
 """
-mutable struct SimpleParticleFilter{S,R,RNG<:AbstractRNG} <: Updater
-    model
+mutable struct SimpleParticleFilter{S,M,R,RNG<:AbstractRNG} <: Updater
+    model::M
     resample::R
     rng::RNG
     _particle_memory::Vector{S}
     _weight_memory::Vector{Float64}
 
-    SimpleParticleFilter{S, R, RNG}(model, resample, rng) where {S,R,RNG} = new(model, resample, rng, state_type(model)[], Float64[])
+    SimpleParticleFilter{S, M, R, RNG}(model, resample, rng) where {S,M,R,RNG} = new(model, resample, rng, state_type(model)[], Float64[])
 end
 function SimpleParticleFilter{R}(model, resample::R, rng::AbstractRNG)
-    SimpleParticleFilter{state_type(model),R,typeof(rng)}(model, resample, rng)
+    SimpleParticleFilter{state_type(model),typeof(model),R,typeof(rng)}(model, resample, rng)
 end
 SimpleParticleFilter(model, resample; rng::AbstractRNG=Base.GLOBAL_RNG) = SimpleParticleFilter(model, resample, rng)
 
