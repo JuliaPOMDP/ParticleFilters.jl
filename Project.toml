@@ -1,0 +1,9 @@
+name = "ParticleFilters"
+uuid = "c8b314e2-9260-5cf8-ae76-3be7461ca6d0"
+repo = "https://github.com/JuliaPOMDP/ParticleFilters.jl.git"
+
+[deps]
+POMDPModelTools = "ddee4e65-a780-5c57-ad17-2363fca24141"
+POMDPPolicies = "fd2a78ec-a0b2-11e8-254f-71ff51514d6b"
+POMDPs = "a93abf59-7444-517b-a68a-c42f96afdd7d"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"

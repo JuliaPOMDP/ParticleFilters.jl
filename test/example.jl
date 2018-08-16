@@ -1,6 +1,7 @@
 using ParticleFilters
 using Distributions
 using StaticArrays
+using Random
 
 struct DblIntegrator2D 
     W::Matrix{Float64} # Process noise covariance
@@ -25,9 +26,9 @@ end
 N = 1000
 model = DblIntegrator2D(0.001*eye(4), eye(2), 0.1)
 filter = SIRParticleFilter(model, N)
-srand(1)
-rng = Base.GLOBAL_RNG
-b = ParticleCollection([4.0*rand(4)-2.0 for i in 1:N])
+Random.seed!(1)
+rng = Random.GLOBAL_RNG
+b = ParticleCollection([4.0*rand(4).-2.0 for i in 1:N])
 s = [0.0, 1.0, 1.0, 0.0]
 for i in 1:100
     global b, s; print(".")

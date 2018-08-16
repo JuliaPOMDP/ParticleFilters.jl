@@ -1,34 +1,33 @@
 using ParticleFilters
 using POMDPs
 using POMDPModels
-using POMDPToolbox
-using Base.Test
+using Test
 
 import ParticleFilters: obs_weight
 import POMDPs: observation
 
-struct P <: POMDP{Void, Void, Void} end
+struct P <: POMDP{Nothing, Nothing, Nothing} end
 
-@test !@implemented obs_weight(::P, ::Void, ::Void, ::Void, ::Void)
-@test !@implemented obs_weight(::P, ::Void, ::Void, ::Void)
-@test !@implemented obs_weight(::P, ::Void, ::Void)
+@test !@implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing)
+@test !@implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing)
+@test !@implemented obs_weight(::P, ::Nothing, ::Nothing)
 
-obs_weight(::P, ::Void, ::Void, ::Void) = 1.0
-@test @implemented obs_weight(::P, ::Void, ::Void, ::Void)
-@test @implemented obs_weight(::P, ::Void, ::Void, ::Void, ::Void)
-@test !@implemented obs_weight(::P, ::Void, ::Void)
+obs_weight(::P, ::Nothing, ::Nothing, ::Nothing) = 1.0
+@test @implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing)
+@test @implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing)
+@test !@implemented obs_weight(::P, ::Nothing, ::Nothing)
 
 @test obs_weight(P(), nothing, nothing, nothing, nothing) == 1.0
 
-observation(::P, ::Void) = nothing
-@test @implemented obs_weight(::P, ::Void, ::Void)
+observation(::P, ::Nothing) = nothing
+@test @implemented obs_weight(::P, ::Nothing, ::Nothing)
 
 include("example.jl")
 
 p = TigerPOMDP()
 filter = SIRParticleFilter(p, 10000)
-srand(filter, 47)
-b = @inferred initialize_belief(filter, initial_state_distribution(p))
+Random.seed!(filter, 47)
+b = @inferred initialize_belief(filter, initialstate_distribution(p))
 m = @inferred mode(b)
 m = @inferred mean(b)
 it = @inferred iterator(b)
@@ -49,7 +48,7 @@ rb2 = @inferred resample(rs, WeightedParticleBelief(particles(b), ones(n_particl
 
 rng = MersenneTwister(47)
 uf = UnweightedParticleFilter(p, 1000, rng)
-ps = @inferred initialize_belief(uf, initial_state_distribution(p))
+ps = @inferred initialize_belief(uf, initialstate_distribution(p))
 a = @inferred rand(rng, actions(p))
 sp, o = @inferred generate_so(p, rand(rng, ps), a, rng)
 bp = @inferred update(uf, ps, a, o)
