@@ -1,6 +1,7 @@
 using ParticleFilters
 using Distributions
 using StaticArrays
+using LinearAlgebra
 using Random
 
 struct DblIntegrator2D 
@@ -25,7 +26,7 @@ end
 
 @testset "example" begin
     N = 1000
-    model = DblIntegrator2D(0.001*eye(4), eye(2), 0.1)
+    model = DblIntegrator2D(0.001*Diagonal{Float64}(I, 4), Diagonal{Float64}(I, 2), 0.1)
     filter = SIRParticleFilter(model, N)
     Random.seed!(1)
     rng = Random.GLOBAL_RNG

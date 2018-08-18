@@ -9,13 +9,15 @@ import POMDPs: generate_s
 import POMDPs: action, value
 import POMDPs: implemented
 import POMDPs: sampletype
-import Base: rand, mean
 
 import POMDPModelTools: obs_weight
 using StatsBase
 using Random
 using Statistics
 using POMDPPolicies
+
+import Random: rand
+import Statistics: mean
 
 export
     AbstractParticleBelief,
@@ -146,7 +148,7 @@ mutable struct SimpleParticleFilter{S,M,R,RNG<:AbstractRNG} <: Updater
     SimpleParticleFilter{S, M, R, RNG}(model, resample, rng) where {S,M,R,RNG} = new(model, resample, rng, state_type(model)[], Float64[])
 end
 function SimpleParticleFilter(model, resample::R, rng::AbstractRNG) where {R}
-    SimpleParticleFilter{state_type(model),typeof(model),R,typeof(rng)}(model, resample, rng)
+    SimpleParticleFilter{statetype(model),typeof(model),R,typeof(rng)}(model, resample, rng)
 end
 SimpleParticleFilter(model, resample; rng::AbstractRNG=Random.GLOBAL_RNG) = SimpleParticleFilter(model, resample, rng)
 
