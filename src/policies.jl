@@ -11,7 +11,7 @@ the corresponding particle
 function unnormalized_util(p::AlphaVectorPolicy, b::AbstractParticleBelief)
     util = zeros(n_actions(p.pomdp))
     for (i, s) in enumerate(particles(b))
-        j = state_index(p.pomdp, s)
+        j = stateindex(p.pomdp, s)
         util += weight(b, i)*getindex.(p.alphas, (j,))
     end
     return util
@@ -19,7 +19,7 @@ end
 
 function action(p::AlphaVectorPolicy, b::AbstractParticleBelief)
     util = unnormalized_util(p, b)
-    ihi = indmax(util)
+    ihi = argmax(util)
     return p.action_map[ihi]
 end
 

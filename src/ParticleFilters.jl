@@ -3,8 +3,8 @@ __precompile__()
 module ParticleFilters
 
 using POMDPs
-import POMDPs: pdf, mode, update, initialize_belief, iterator
-import POMDPs: state_type, isterminal, observation
+import POMDPs: pdf, mode, update, initialize_belief, support
+import POMDPs: statetype, isterminal, observation
 import POMDPs: generate_s
 import POMDPs: action, value
 import POMDPs: implemented
@@ -44,13 +44,14 @@ export
     pdf,
     mode,
     update,
+    support,
     initialize_belief
 
 export
     generate_s,
     observation,
     isterminal,
-    state_type
+    statetype
 
 abstract type AbstractParticleBelief{T} end
 
@@ -145,7 +146,7 @@ mutable struct SimpleParticleFilter{S,M,R,RNG<:AbstractRNG} <: Updater
     _particle_memory::Vector{S}
     _weight_memory::Vector{Float64}
 
-    SimpleParticleFilter{S, M, R, RNG}(model, resample, rng) where {S,M,R,RNG} = new(model, resample, rng, state_type(model)[], Float64[])
+    SimpleParticleFilter{S, M, R, RNG}(model, resample, rng) where {S,M,R,RNG} = new(model, resample, rng, statetype(model)[], Float64[])
 end
 function SimpleParticleFilter(model, resample::R, rng::AbstractRNG) where {R}
     SimpleParticleFilter{statetype(model),typeof(model),R,typeof(rng)}(model, resample, rng)
@@ -184,7 +185,7 @@ end
 
 
 # default for non-POMDPs
-state_type(model) = Any
+statetype(model) = Any
 isterminal(model, s) = false
 observation(model, s, a, sp) = observation(model, a, sp)
 

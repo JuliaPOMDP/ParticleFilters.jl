@@ -6,7 +6,7 @@ weight(b::ParticleCollection, i::Int) = 1.0/length(b.particles)
 particle(b::ParticleCollection, i::Int) = b.particles[i]
 rand(rng::AbstractRNG, b::ParticleCollection) = b.particles[rand(rng, 1:length(b.particles))]
 Statistics.mean(b::ParticleCollection) = sum(b.particles)/length(b.particles)
-iterator(b::ParticleCollection) = particles(b)
+support(b::ParticleCollection) = unique(particles(b))
 
 n_particles(b::WeightedParticleBelief) = length(b.particles)
 particles(p::WeightedParticleBelief) = p.particles
@@ -59,4 +59,4 @@ function mode(b::AbstractParticleBelief{T}) where {T} # don't know if this is ef
     return most_likely
 end
 
-iterator(b::AbstractParticleBelief) = keys(get_probs(b))
+support(b::AbstractParticleBelief) = keys(get_probs(b))

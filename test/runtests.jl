@@ -28,13 +28,13 @@ include("example.jl")
 
 @testset "infer" begin
     p = TigerPOMDP()
+    filter = SIRParticleFilter(p, 10000)
+    Random.seed!(filter, 47)
+    b = @inferred initialize_belief(filter, initialstate_distribution(p))
     @testset "sir" begin
-        filter = SIRParticleFilter(p, 10000)
-        Random.seed!(filter, 47)
-        b = @inferred initialize_belief(filter, initialstate_distribution(p))
         m = @inferred mode(b)
         m = @inferred mean(b)
-        it = @inferred iterator(b)
+        it = @inferred support(b)
         @inferred weighted_particles(b)
     end
     @testset "lowvar" begin
@@ -47,6 +47,7 @@ include("example.jl")
     end
     # test that the special method for ParticleCollections works
     @testset "collection" begin
+        rs = LowVarianceResampler(1000)
         b = ParticleCollection(1:1000)
         rb1 = @inferred resample(rs, b, MersenneTwister(3))
         rb2 = @inferred resample(rs, WeightedParticleBelief(particles(b), ones(n_particles(b))), MersenneTwister(3))
@@ -71,7 +72,8 @@ end
     # test specific method for alpha vector policies and particle beliefs
     pomdp = BabyPOMDP()
     # these values were gotten from FIB.jl
-    alphas = [-29.4557 -36.5093; -19.4557 -16.0629]
+    # alphas = [-29.4557 -36.5093; -19.4557 -16.0629]
+    alphas = [-16.0629 -19.4557; -36.5093 -29.4557]
     policy = AlphaVectorPolicy(pomdp, alphas)
 
     # initial belief is 100% confidence in baby being hungry

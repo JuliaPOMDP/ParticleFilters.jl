@@ -28,7 +28,7 @@ end
 function resample(re::LowVarianceResampler, b::ParticleCollection{S}, rng::AbstractRNG) where {S}
     r = rand(rng)*n_particles(b)/re.n
     chunk = n_particles(b)/re.n
-    inds = ceil.(Int, chunk*(0:re.n-1)+r)
+    inds = ceil.(Int, chunk*(0:re.n-1).+r)
     ps = particles(b)[inds]
     return ParticleCollection(ps)
 end
