@@ -38,6 +38,7 @@ For example, a double integrator model (written for clarity, not speed) is shown
 
 ```julia
 using ParticleFilters
+using LinearAlgebra
 using Distributions
 using Reel
 using Plots
@@ -63,7 +64,7 @@ function ParticleFilters.observation(model::DblIntegrator2D, u, sp)
 end
 
 N = 1000
-model = DblIntegrator2D(0.001*eye(4), eye(2), 0.1)
+model = DblIntegrator2D(0.001*Diagonal{Float64}(I, 4), Diagonal{Float64}(I, 2), 0.1)
 filter = SIRParticleFilter(model, N)
 srand(1)
 rng = Base.GLOBAL_RNG

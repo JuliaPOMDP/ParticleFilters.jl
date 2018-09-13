@@ -3,17 +3,21 @@ __precompile__()
 module ParticleFilters
 
 using POMDPs
-import POMDPs: pdf, mode, update, initialize_belief, iterator
-import POMDPs: state_type, isterminal, observation
+import POMDPs: pdf, mode, update, initialize_belief, support
+import POMDPs: statetype, isterminal, observation
 import POMDPs: generate_s
 import POMDPs: action, value
 import POMDPs: implemented
 import POMDPs: sampletype
-import Base: rand, mean
 
-using POMDPToolbox
-import POMDPToolbox: obs_weight
+import POMDPModelTools: obs_weight
 using StatsBase
+using Random
+using Statistics
+using POMDPPolicies
+
+import Random: rand
+import Statistics: mean
 
 export
     AbstractParticleBelief,
@@ -40,18 +44,19 @@ export
     pdf,
     mode,
     update,
+    support,
     initialize_belief
 
 export
     generate_s,
     observation,
     isterminal,
-    state_type
+    statetype
 
 abstract type AbstractParticleBelief{T} end
 
 # DEPRECATED: remove in future release
-Base.eltype{T}(::Type{AbstractParticleBelief{T}}) = T
+Base.eltype(::Type{AbstractParticleBelief{T}}) where {T} = T
 
 sampletype(::Type{B}) where B<:AbstractParticleBelief{T} where T = T
 
@@ -62,21 +67,21 @@ Unweighted particle belief
 """
 mutable struct ParticleCollection{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
-    _probs::Nullable{Dict{T,Float64}} # a cache for the probabilities
+    _probs::Union{Nothing, Dict{T,Float64}} # a cache for the probabilities
 
     ParticleCollection{T}() where {T} = new(T[], nothing)
-    ParticleCollection{T}(particles) where {T} = new(particles, Nullable{Dict{T,Float64}}())
+    ParticleCollection{T}(particles) where {T} = new(particles, Dict{T,Float64}())
     ParticleCollection{T}(particles, _probs) where {T} = new(particles, _probs)
 end
-ParticleCollection{T}(p::AbstractVector{T}) = ParticleCollection{T}(p, nothing)
+ParticleCollection(p::AbstractVector{T}) where T = ParticleCollection{T}(p, nothing)
 
 mutable struct WeightedParticleBelief{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
     weights::Vector{Float64}
     weight_sum::Float64
-    _probs::Nullable{Dict{T,Float64}} # this is not used now, but may be later
+    _probs::Union{Nothing, Dict{T,Float64}} # this is not used now, but may be later
 end
-WeightedParticleBelief{T}(particles::AbstractVector{T}, weights::AbstractVector, weight_sum=sum(weights)) = WeightedParticleBelief{T}(particles, weights, weight_sum, nothing)
+WeightedParticleBelief(particles::AbstractVector{T}, weights::AbstractVector, weight_sum=sum(weights)) where {T} = WeightedParticleBelief{T}(particles, weights, weight_sum, nothing)
 
 ### Belief interface ###
 # see beliefs.jl for implementation
@@ -141,14 +146,14 @@ mutable struct SimpleParticleFilter{S,M,R,RNG<:AbstractRNG} <: Updater
     _particle_memory::Vector{S}
     _weight_memory::Vector{Float64}
 
-    SimpleParticleFilter{S, M, R, RNG}(model, resample, rng) where {S,M,R,RNG} = new(model, resample, rng, state_type(model)[], Float64[])
+    SimpleParticleFilter{S, M, R, RNG}(model, resample, rng) where {S,M,R,RNG} = new(model, resample, rng, statetype(model)[], Float64[])
 end
-function SimpleParticleFilter{R}(model, resample::R, rng::AbstractRNG)
-    SimpleParticleFilter{state_type(model),typeof(model),R,typeof(rng)}(model, resample, rng)
+function SimpleParticleFilter(model, resample::R, rng::AbstractRNG) where {R}
+    SimpleParticleFilter{statetype(model),typeof(model),R,typeof(rng)}(model, resample, rng)
 end
-SimpleParticleFilter(model, resample; rng::AbstractRNG=Base.GLOBAL_RNG) = SimpleParticleFilter(model, resample, rng)
+SimpleParticleFilter(model, resample; rng::AbstractRNG=Random.GLOBAL_RNG) = SimpleParticleFilter(model, resample, rng)
 
-function update{S}(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o)
+function update(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o) where {S}
     ps = particles(b)
     pm = up._particle_memory
     wm = up._weight_memory
@@ -173,14 +178,14 @@ function update{S}(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o)
     return resample(up.resample, WeightedParticleBelief{S}(pm, wm, sum(wm), nothing), up.rng)
 end
 
-function Base.srand(f::SimpleParticleFilter, seed)
-    srand(f.rng, seed)
+function Random.seed!(f::SimpleParticleFilter, seed)
+    Random.seed!(f.rng, seed)
     return f
 end
 
 
 # default for non-POMDPs
-state_type(model) = Any
+statetype(model) = Any
 isterminal(model, s) = false
 observation(model, s, a, sp) = observation(model, a, sp)
 
@@ -206,7 +211,7 @@ function resample end
 ### Convenience Aliases ###
 const SIRParticleFilter{T} = SimpleParticleFilter{T, LowVarianceResampler}
 
-function SIRParticleFilter(model, n::Int; rng::AbstractRNG=Base.GLOBAL_RNG)
+function SIRParticleFilter(model, n::Int; rng::AbstractRNG=Random.GLOBAL_RNG)
     return SimpleParticleFilter(model, LowVarianceResampler(n), rng)
 end
 

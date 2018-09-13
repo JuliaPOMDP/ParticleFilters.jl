@@ -1,4 +1,4 @@
-function resample{S}(r::ImportanceResampler, b::WeightedParticleBelief{S}, rng::AbstractRNG)
+function resample(r::ImportanceResampler, b::WeightedParticleBelief{S}, rng::AbstractRNG) where {S}
     ps = Array{S}(r.n)
     if weight_sum(b) <= 0
         warn("Invalid weights in particle filter: weight_sum = $(weight_sum(b))")
@@ -8,8 +8,8 @@ function resample{S}(r::ImportanceResampler, b::WeightedParticleBelief{S}, rng::
     return ParticleCollection(ps)
 end
 
-function resample{S}(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG)
-    ps = Array{S}(re.n)
+function resample(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
+    ps = Array{S}(undef, re.n)
     r = rand(rng)*weight_sum(b)/re.n
     c = weight(b,1)
     i = 1
@@ -25,10 +25,10 @@ function resample{S}(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng
     return ParticleCollection(ps)
 end
 
-function resample{S}(re::LowVarianceResampler, b::ParticleCollection{S}, rng::AbstractRNG)
+function resample(re::LowVarianceResampler, b::ParticleCollection{S}, rng::AbstractRNG) where {S}
     r = rand(rng)*n_particles(b)/re.n
     chunk = n_particles(b)/re.n
-    inds = ceil.(Int, chunk*(0:re.n-1)+r)
+    inds = ceil.(Int, chunk*(0:re.n-1).+r)
     ps = particles(b)[inds]
     return ParticleCollection(ps)
 end
@@ -36,7 +36,7 @@ end
 resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, rng::AbstractRNG) = resample(r, b, sampletype(b), rng)
 
 function resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, sampletype::Type, rng::AbstractRNG)
-    ps = Array{sampletype}(r.n)
+    ps = Array{sampletype}(undef, r.n)
     for i in 1:r.n
         ps[i] = rand(rng, b)
     end
