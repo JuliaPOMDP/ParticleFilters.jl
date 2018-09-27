@@ -1,5 +1,3 @@
-__precompile__()
-
 module ParticleFilters
 
 using POMDPs
@@ -55,10 +53,8 @@ export
 
 abstract type AbstractParticleBelief{T} end
 
-# DEPRECATED: remove in future release
-Base.eltype(::Type{AbstractParticleBelief{T}}) where {T} = T
-
 sampletype(::Type{B}) where B<:AbstractParticleBelief{T} where T = T
+Random.gentype(::Type{B}) where B<:AbstractParticleBelief{T} where T = T
 
 ### Belief types ###
 
@@ -171,11 +167,11 @@ function update(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o) where 
             push!(wm, obs_weight(up.model, s, a, sp, o))
         end
     end
-    if all_terminal
-        error("Particle filter update error: all states in the particle collection were terminal.")
-        # TODO: create a mechanism to handle this failure
-    end
-    return resample(up.resample, WeightedParticleBelief{S}(pm, wm, sum(wm), nothing), up.rng)
+    return resample(up.resample,
+                    WeightedParticleBelief{S}(pm, wm, sum(wm), nothing),
+                    up.model,
+                    b, a, o,
+                    up.rng)
 end
 
 function Random.seed!(f::SimpleParticleFilter, seed)
@@ -202,11 +198,34 @@ end
 ### Resample Interface ###
 # see resamplers.jl for implementations
 """
-    resample(resampler, b::WeightedParticleBelief, rng::AbstractRNG)
+    resample(resampler, bp::WeightedParticleBelief, rng::AbstractRNG)
 
-Sample a new ParticleCollection from b.
+Sample a new ParticleCollection from `bp`.
+
+Generic domain-independent resamplers should implement this version.
+
+    resample(resampler, d, rng::AbstractRNG)
+
+Sample a new ParticleCollection from distribution `d`.
+
+All resamplers should implement this version to generate the initial belief.
 """
 function resample end
+
+"""
+    resample(resampler, bp::WeightedParticleBelief, model, b, a, o, rng)
+
+Sample a new particle collection from bp with additional information from the arguments to the update function.
+
+This version defaults to `resample(resampler, bp, rng)`. Domain-specific resamplers that wish to add noise to particles, etc. should implement this version.
+"""
+function resample(resampler, bp::WeightedParticleBelief, model, b, a, o, rng)
+    if isempty(particles(bp)) && all(isterminal(model, s) for s in particles(b))
+        error("Particle filter update error: all states in the particle collection were terminal.")
+    end
+    resample(resampler, bp, rng)
+end
+
 
 ### Convenience Aliases ###
 const SIRParticleFilter{T} = SimpleParticleFilter{T, LowVarianceResampler}
@@ -214,6 +233,10 @@ const SIRParticleFilter{T} = SimpleParticleFilter{T, LowVarianceResampler}
 function SIRParticleFilter(model, n::Int; rng::AbstractRNG=Random.GLOBAL_RNG)
     return SimpleParticleFilter(model, LowVarianceResampler(n), rng)
 end
+function SIRParticleFilter(model, n::Int, rng::AbstractRNG)
+    return SimpleParticleFilter(model, LowVarianceResampler(n), rng)
+end
+
 
 include("unweighted.jl")
 include("beliefs.jl")
