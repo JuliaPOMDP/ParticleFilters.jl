@@ -3,6 +3,7 @@ using POMDPs
 using POMDPModels
 using Test
 using POMDPPolicies
+using POMDPSimulators
 import ParticleFilters: obs_weight
 import POMDPs: observation
 
@@ -25,6 +26,7 @@ observation(::P, ::Nothing) = nothing
 @test @implemented obs_weight(::P, ::Nothing, ::Nothing)
 
 include("example.jl")
+include("domain_specific_resampler.jl")
 
 @testset "infer" begin
     p = TigerPOMDP()

@@ -167,7 +167,11 @@ function update(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o) where 
             push!(wm, obs_weight(up.model, s, a, sp, o))
         end
     end
-    return resample(up.resample, WeightedParticleBelief{S}(pm, wm, sum(wm), nothing), up.rng)
+    return resample(up.resample,
+                    WeightedParticleBelief{S}(pm, wm, sum(wm), nothing),
+                    up.model,
+                    b, a, o,
+                    up.rng)
 end
 
 function Random.seed!(f::SimpleParticleFilter, seed)
@@ -216,7 +220,7 @@ Sample a new particle collection from bp with additional information from the ar
 This version defaults to `resample(resampler, bp, rng)`. Domain-specific resamplers that wish to add noise to particles, etc. should implement this version.
 """
 function resample(resampler, bp::WeightedParticleBelief, model, b, a, o, rng)
-    if isempty(bp) && all(isterminal(model, s) for s in particles(b))
+    if isempty(particles(bp)) && all(isterminal(model, s) for s in particles(b))
         error("Particle filter update error: all states in the particle collection were terminal.")
     end
     resample(resampler, bp, rng)

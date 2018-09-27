@@ -33,7 +33,12 @@ function resample(re::LowVarianceResampler, b::ParticleCollection{S}, rng::Abstr
     return ParticleCollection(ps)
 end
 
-resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, rng::AbstractRNG) = resample(r, b, sampletype(b), rng)
+function resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, rng::AbstractRNG)
+    if @implemented sampletype(::typeof(b))
+        return resample(r, b, sampletype(b), rng)
+    end
+    return resample(r, b, Any, rng)
+end
 
 function resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, sampletype::Type, rng::AbstractRNG)
     ps = Array{sampletype}(undef, r.n)
