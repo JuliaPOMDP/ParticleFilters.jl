@@ -33,17 +33,19 @@ function resample(re::LowVarianceResampler, b::ParticleCollection{S}, rng::Abstr
     return ParticleCollection(ps)
 end
 
-function resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, rng::AbstractRNG)
-    if @implemented sampletype(::typeof(b))
-        return resample(r, b, sampletype(b), rng)
+function resample(r::Union{ImportanceResampler,LowVarianceResampler}, d::D, rng::AbstractRNG) where D
+    if @implemented(support(::D)) && @implemented(pdf(::D, ::typeof(first(support(d)))))
+        S = typeof(first(support(d)))
+        particles = S[]
+        weights = Float64
+        for (s, w) in weighted_iterator(d)
+            push!(particles, s)
+            push!(weights, w)
+        end
+        return resample(r, WeightedParticleBelief(particles, weights), rng)
+    else
+        return ParticleCollection(collect(rand(rng, d) for i in 1:r.n))
     end
-    return resample(r, b, Any, rng)
 end
 
-function resample(r::Union{ImportanceResampler,LowVarianceResampler}, b, sampletype::Type, rng::AbstractRNG)
-    ps = Array{sampletype}(undef, r.n)
-    for i in 1:r.n
-        ps[i] = rand(rng, b)
-    end
-    return ParticleCollection(ps)
-end
+resample(f::Function, d::Any, rng::AbstractRNG) = f(d, rng)

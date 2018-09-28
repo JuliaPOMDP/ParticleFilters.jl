@@ -13,6 +13,7 @@ using StatsBase
 using Random
 using Statistics
 using POMDPPolicies
+using POMDPModelTools # for weighted_iterator
 
 import Random: rand
 import Statistics: mean
@@ -167,6 +168,7 @@ function update(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o) where 
             push!(wm, obs_weight(up.model, s, a, sp, o))
         end
     end
+
     return resample(up.resample,
                     WeightedParticleBelief{S}(pm, wm, sum(wm), nothing),
                     up.model,
@@ -185,20 +187,10 @@ statetype(model) = Any
 isterminal(model, s) = false
 observation(model, s, a, sp) = observation(model, a, sp)
 
-### Resamplers ###
-struct ImportanceResampler
-    n::Int
-end
-
-# low variance sampling algorithm on page 110 of Probabilistic Robotics by Thrun Burgard and Fox
-struct LowVarianceResampler
-    n::Int
-end
-
 ### Resample Interface ###
 # see resamplers.jl for implementations
 """
-    resample(resampler, bp::WeightedParticleBelief, rng::AbstractRNG)
+    resample(resampler, bp::AbstractParticleBelief, rng::AbstractRNG)
 
 Sample a new ParticleCollection from `bp`.
 
@@ -224,6 +216,17 @@ function resample(resampler, bp::WeightedParticleBelief, model, b, a, o, rng)
         error("Particle filter update error: all states in the particle collection were terminal.")
     end
     resample(resampler, bp, rng)
+end
+
+
+### Resamplers ###
+struct ImportanceResampler
+    n::Int
+end
+
+# low variance sampling algorithm on page 110 of Probabilistic Robotics by Thrun Burgard and Fox
+struct LowVarianceResampler
+    n::Int
 end
 
 
