@@ -195,12 +195,6 @@ observation(model, s, a, sp) = observation(model, a, sp)
 Sample a new ParticleCollection from `bp`.
 
 Generic domain-independent resamplers should implement this version.
-
-    resample(resampler, d, rng::AbstractRNG)
-
-Sample a new ParticleCollection from distribution `d`.
-
-All resamplers should implement this version to generate the initial belief.
 """
 function resample end
 
@@ -218,6 +212,14 @@ function resample(resampler, bp::WeightedParticleBelief, model, b, a, o, rng)
     resample(resampler, bp, rng)
 end
 
+"""
+    n_init_samples(resampler)
+
+Number of samples for the initial particle collection.
+
+This is used in the default implementation of initialize_belief.
+"""
+function n_init_samples end
 
 ### Resamplers ###
 struct ImportanceResampler

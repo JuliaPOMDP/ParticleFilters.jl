@@ -4,6 +4,8 @@ end
 
 LDResampler(n::Int) = LDResampler(LowVarianceResampler(n))
 
+ParticleFilters.n_init_samples(r::LDResampler) = n_init_samples(r.lv)
+
 function ParticleFilters.resample(r::LDResampler,
                                   bp::WeightedParticleBelief,
                                   m::LightDark1D,
@@ -17,7 +19,6 @@ function ParticleFilters.resample(r::LDResampler,
     return resample(r.lv, bp, rng)
 end
 
-ParticleFilters.resample(r::LDResampler, d, rng::AbstractRNG) = resample(r.lv, d, rng)
 
 @testset "domain_specific" begin
 
