@@ -137,21 +137,23 @@ A particle filter that calculates relative weights for each particle based on ob
 
 The resample field may be a function or an object that controls resampling. If it is a function `f`, `f(b, rng)` will be called. If it is an object, `o`, `resample(o, b, rng)` will be called, where `b` is a `WeightedParticleBelief`.
 """
-mutable struct SimpleParticleFilter{S,M,R,RNG<:AbstractRNG} <: Updater
+mutable struct SimpleParticleFilter{M,R,RNG<:AbstractRNG} <: Updater
     model::M
     resample::R
+    n_init::Int
     rng::RNG
-    _particle_memory::Vector{S}
+    _particle_memory::Union{Nothing,AbstractVector}
     _weight_memory::Vector{Float64}
 
-    SimpleParticleFilter{S, M, R, RNG}(model, resample, rng) where {S,M,R,RNG} = new(model, resample, rng, statetype(model)[], Float64[])
+    SimpleParticleFilter{M, R, RNG}(model, resample, n, rng) where {M,R,RNG} = new(model, resample, n, rng, nothing, Float64[])
+    SimpleParticleFilter{M, R, RNG}(model::POMDP, resample, n, rng) where {M,R,RNG} = new(model, resample, n, rng, statetype(model)[], Float64[])
 end
 function SimpleParticleFilter(model, resample::R, rng::AbstractRNG) where {R}
-    SimpleParticleFilter{statetype(model),typeof(model),R,typeof(rng)}(model, resample, rng)
+    SimpleParticleFilter{typeof(model),R,typeof(rng)}(model, resample, n, rng)
 end
-SimpleParticleFilter(model, resample; rng::AbstractRNG=Random.GLOBAL_RNG) = SimpleParticleFilter(model, resample, rng)
+SimpleParticleFilter(model, resample, n; rng::AbstractRNG=Random.GLOBAL_RNG) = SimpleParticleFilter(model, resample, n, rng)
 
-function update(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o) where {S}
+function update(up::SimpleParticleFilter, b::ParticleCollection, a, o)
     ps = particles(b)
     pm = up._particle_memory
     wm = up._weight_memory
@@ -171,7 +173,7 @@ function update(up::SimpleParticleFilter{S}, b::ParticleCollection, a, o) where 
     end
 
     return resample(up.resample,
-                    WeightedParticleBelief{S}(pm, wm, sum(wm), nothing),
+                    WeightedParticleBelief(pm, wm, sum(wm), nothing),
                     up.model,
                     b, a, o,
                     up.rng)
@@ -183,8 +185,6 @@ function Random.seed!(f::SimpleParticleFilter, seed)
 end
 
 
-# default for non-POMDPs
-statetype(model) = Any
 isterminal(model, s) = false
 observation(model, s, a, sp) = observation(model, a, sp)
 
@@ -237,10 +237,10 @@ end
 const SIRParticleFilter{T} = SimpleParticleFilter{T, LowVarianceResampler}
 
 function SIRParticleFilter(model, n::Int; rng::AbstractRNG=Random.GLOBAL_RNG)
-    return SimpleParticleFilter(model, LowVarianceResampler(n), rng)
+    return SimpleParticleFilter(model, LowVarianceResampler(n), n, rng)
 end
 function SIRParticleFilter(model, n::Int, rng::AbstractRNG)
-    return SimpleParticleFilter(model, LowVarianceResampler(n), rng)
+    return SimpleParticleFilter(model, LowVarianceResampler(n), n, rng)
 end
 
 
