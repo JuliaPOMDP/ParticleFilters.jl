@@ -37,7 +37,8 @@ export
     weight,
     particle,
     weights,
-    obs_weight
+    obs_weight,
+    n_init_samples
 
 export
     pdf,

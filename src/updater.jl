@@ -22,10 +22,10 @@ function initialize_belief(up::SimpleParticleFilter, d::D) where D
             push!(particles, s)
             push!(weights, w)
         end
-        return resample(up.resample, WeightedParticleBelief(particles, weights), rng)
+        return resample(up.resample, WeightedParticleBelief(particles, weights), up.rng)
     else
         n = n_init_samples(up.resample)
-        return ParticleCollection(collect(rand(rng, d) for i in 1:n))
+        return ParticleCollection(collect(rand(up.rng, d) for i in 1:n))
     end
 end
 
