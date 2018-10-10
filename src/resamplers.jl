@@ -1,3 +1,34 @@
+### Resample Interface ###
+"""
+    resample(resampler, bp::AbstractParticleBelief, rng::AbstractRNG)
+
+Sample a new ParticleCollection from `bp`.
+
+Generic domain-independent resamplers should implement this version.
+"""
+function resample end
+
+"""
+    resample(resampler, bp::WeightedParticleBelief, predict_model, reweight_model, b, a, o, rng)
+
+Sample a new particle collection from bp with additional information from the arguments to the update function.
+
+This version defaults to `resample(resampler, bp, rng)`. Domain-specific resamplers that wish to add noise to particles, etc. should implement this version.
+"""
+resample(resampler, bp::WeightedParticleBelief, pm, rm, b, a, o, rng) = resample(resampler, bp, rng)
+
+function resample(resampler, bp::WeightedParticleBelief, pm::Union{POMDP,MDP}, rm, b, a, o, rng)
+    if isempty(particles(bp)) && all(isterminal(model, s) for s in particles(b))
+        error("Particle filter update error: all states in the particle collection were terminal.")
+    end
+    resample(resampler, bp, rng)
+end
+
+### Resamplers ###
+struct ImportanceResampler
+    n::Int
+end
+
 function resample(r::ImportanceResampler, b::WeightedParticleBelief{S}, rng::AbstractRNG) where {S}
     ps = Array{S}(undef, r.n)
     if weight_sum(b) <= 0
@@ -6,6 +37,11 @@ function resample(r::ImportanceResampler, b::WeightedParticleBelief{S}, rng::Abs
     #XXX this may break if StatsBase changes
     StatsBase.alias_sample!(rng, particles(b), Weights(weights(b), weight_sum(b)), ps)
     return ParticleCollection(ps)
+end
+
+# low variance sampling algorithm on page 110 of Probabilistic Robotics by Thrun Burgard and Fox
+struct LowVarianceResampler
+    n::Int
 end
 
 function resample(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}

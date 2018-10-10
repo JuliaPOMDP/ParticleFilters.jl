@@ -49,57 +49,13 @@ export
     support,
     initialize_belief
 
-export
-    generate_s,
-    observation,
-    isterminal,
-    statetype
-
 
 include("beliefs.jl")
 include("basic.jl")
-
-### Resample Interface ###
-# see resamplers.jl for implementations
-"""
-    resample(resampler, bp::AbstractParticleBelief, rng::AbstractRNG)
-
-Sample a new ParticleCollection from `bp`.
-
-Generic domain-independent resamplers should implement this version.
-"""
-function resample end
-
-"""
-    resample(resampler, bp::WeightedParticleBelief, predict_model, reweight_model, b, a, o, rng)
-
-Sample a new particle collection from bp with additional information from the arguments to the update function.
-
-This version defaults to `resample(resampler, bp, rng)`. Domain-specific resamplers that wish to add noise to particles, etc. should implement this version.
-"""
-resample(resampler, bp::WeightedParticleBelief, pm, rm, b, a, o, rng) = resample(resampler, bp, rng)
-
-function resample(resampler, bp::WeightedParticleBelief, pm::Union{POMDP,MDP}, rm, b, a, o, rng)
-    if isempty(particles(bp)) && all(isterminal(model, s) for s in particles(b))
-        error("Particle filter update error: all states in the particle collection were terminal.")
-    end
-    resample(resampler, bp, rng)
-end
-
-### Resamplers ###
-struct ImportanceResampler
-    n::Int
-end
-
-# low variance sampling algorithm on page 110 of Probabilistic Robotics by Thrun Burgard and Fox
-struct LowVarianceResampler
-    n::Int
-end
-
+include("resamplers.jl")
 include("sir.jl")
 include("unweighted.jl")
 include("updater.jl")
-include("resamplers.jl")
 include("policies.jl")
 
 end # module
