@@ -8,7 +8,8 @@ ParticleFilters.n_init_samples(r::LDResampler) = n_init_samples(r.lv)
 
 function ParticleFilters.resample(r::LDResampler,
                                   bp::WeightedParticleBelief,
-                                  m::LightDark1D,
+                                  pm::LightDark1D,
+                                  rm::LightDark1D,
                                   b,
                                   a,
                                   o,
@@ -24,7 +25,7 @@ end
 
 n = 100
 m = LightDark1D()
-up = SimpleParticleFilter(m, LDResampler(n))
+up = BasicParticleFilter(m, LDResampler(n), n)
 p = FunctionPolicy(b->0)
 
 bp = first(stepthrough(m, p, up, "bp"))

@@ -12,7 +12,7 @@ ro = RolloutSimulator(rng=MersenneTwister(1), max_steps=10)
 simulate(ro, pomdp, policy, fnew)
 
 policy = FunctionPolicy(s->Vec2([0.0, 0.0]))
-fnew = SimpleParticleFilter(pomdp, LowVarianceResampler(1000), rng=MersenneTwister(3))
+fnew = BasicParticleFilter(pomdp, LowVarianceResampler(1000), 1000, MersenneTwister(3))
 is = Vec2([5.2, 0.0])
 hr = HistoryRecorder(initial_state=is, max_steps=10, rng=MersenneTwister(3))
 hist = simulate(hr, pomdp, policy, fnew)
