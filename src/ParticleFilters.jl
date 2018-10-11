@@ -55,7 +55,7 @@ include("basic.jl")
 include("resamplers.jl")
 include("sir.jl")
 include("unweighted.jl")
-include("updater.jl")
+include("pomdps.jl")
 include("policies.jl")
 
 end # module
