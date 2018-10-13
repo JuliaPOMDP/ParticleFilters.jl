@@ -28,7 +28,10 @@ export
     ImportanceResampler,
     LowVarianceResampler,
     SIRParticleFilter,
-    UnweightedParticleFilter
+    UnweightedParticleFilter,
+    ParticleFilterModel,
+    PredictModel,
+    ReweightModel
 
 export
     resample,
@@ -55,6 +58,7 @@ include("basic.jl")
 include("resamplers.jl")
 include("sir.jl")
 include("unweighted.jl")
+include("models.jl")
 include("pomdps.jl")
 include("policies.jl")
 

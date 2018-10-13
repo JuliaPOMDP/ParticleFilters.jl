@@ -26,7 +26,7 @@ end
 observation(::P, ::Nothing) = nothing
 @test @implemented obs_weight(::P, ::Nothing, ::Nothing)
 
-# include("example.jl")
+include("example.jl")
 include("domain_specific_resampler.jl")
 
 @testset "infer" begin
