@@ -25,7 +25,7 @@ f(x, u, rng) = A*x + B*u + rand(rng, MvNormal(W))
 g(x0, u, x, y) = pdf(MvNormal(x[1:2], V), y)
 model = ParticleFilterModel{Vector{Float64}}(f, g)
 
-h(x, rng) = rand(rng, MvNormal(x[1:2], V))
+h(x0, u, x, rng) = rand(rng, MvNormal(x[1:2], V))
 
 @testset "example" begin
     N = 1000
