@@ -37,6 +37,14 @@ function initialize_belief(up::BasicParticleFilter, b::AbstractParticleBelief)
     return resample(ImportanceResampler(up.n_init), b, up.rng) # resample is needed to control number of particles
 end
 
+function initialize_belief(up::BasicParticleFilter, b::ParticleCollection)
+    if n_particles(b) == up.n_init
+        return b
+    else
+        return resample(ImportanceResampler(up.n_init), b, up.rng) # resample is needed to control number of particles
+    end
+end
+
 function initialize_belief(up::BasicParticleFilter, b::AbstractVector)
     pc = ParticleCollection(b)
     return resample(ImportanceResampler(up.n_init), pc, up.rng)

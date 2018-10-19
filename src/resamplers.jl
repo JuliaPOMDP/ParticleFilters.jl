@@ -29,7 +29,7 @@ struct ImportanceResampler
     n::Int
 end
 
-function resample(r::ImportanceResampler, b::WeightedParticleBelief{S}, rng::AbstractRNG) where {S}
+function resample(r::ImportanceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
     ps = Array{S}(undef, r.n)
     if weight_sum(b) <= 0
         warn("Invalid weights in particle filter: weight_sum = $(weight_sum(b))")

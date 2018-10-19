@@ -1,5 +1,3 @@
-__precompile__()
-
 module ParticleFilters
 
 using POMDPs
@@ -43,7 +41,8 @@ export
     particle,
     weights,
     obs_weight,
-    n_init_samples
+    n_init_samples,
+    runfilter
 
 export
     pdf,
@@ -61,5 +60,6 @@ include("unweighted.jl")
 include("models.jl")
 include("pomdps.jl")
 include("policies.jl")
+include("runfilter.jl")
 
 end # module
