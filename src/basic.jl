@@ -64,3 +64,28 @@ end
 
 predict!(pm, m, b, a, o, rng) = predict!(pm, m, b, a, rng)
 reweight!(wm, m, b, a, pm, o, rng) = reweight!(wm, m, b, a, pm, o)
+
+"""
+    predict(m, b, u, rng)
+
+Simulate each of the particles in `b` forward one time step using model `m` and contol input `u` returning a vector of states.
+"""
+function predict(m, b, args...)
+    pm = particle_memory(m)
+    resize!(pm, n_particles(b))
+    predict!(pm, m, b, args...)
+    return pm
+end
+
+"""
+    reweight(m, b, u, pm, y)
+
+Return a vector of likelihood weights for each particle in `pm` given observation `y`.
+
+`pm` can be generated with `predict(m, b, u, rng)`.
+"""
+function reweight(m, b, args...)
+    wm = Vector{Float64}(undef, n_particles(b))
+    reweight!(wm, m, b, args...)
+    return wm
+end
