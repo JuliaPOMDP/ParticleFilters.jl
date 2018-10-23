@@ -5,6 +5,8 @@
     BasicParticleFilter(model, resampler, n_init::Integer, rng::AbstractRNG)
 
 Construct a basic particle filter with three steps: predict, reweight, and resample.
+
+In the second constructor, `model` is used for both the prediction and reweighting.
 """
 mutable struct BasicParticleFilter{PM,RM,RS,RNG<:AbstractRNG,PMEM} <: Updater
     predict_model::PM
@@ -62,6 +64,10 @@ function Random.seed!(f::BasicParticleFilter, seed)
     return f
 end
 
+
+function predict! end
+function reweight! end
+
 predict!(pm, m, b, a, o, rng) = predict!(pm, m, b, a, rng)
 reweight!(wm, m, b, a, pm, o, rng) = reweight!(wm, m, b, a, pm, o)
 
@@ -76,6 +82,7 @@ function predict(m, b, args...)
     predict!(pm, m, b, args...)
     return pm
 end
+predict(f::BasicParticleFilter, args...) = predict(f.predict_model, args...)
 
 """
     reweight(m, b, u, pm, y)
@@ -89,3 +96,4 @@ function reweight(m, b, args...)
     reweight!(wm, m, b, args...)
     return wm
 end
+reweight(f::BasicParticleFilter, args...) = reweight(f.reweight_model, args...)

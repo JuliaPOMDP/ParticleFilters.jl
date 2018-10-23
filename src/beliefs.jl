@@ -78,7 +78,9 @@ function probdict end
 ## Unweighted ##
 
 """
-Unweighted particle belief
+    ParticleCollection{S}
+
+Unweighted particle belief consisting of equally important particles of type `S`.
 """
 mutable struct ParticleCollection{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
@@ -103,6 +105,11 @@ support(b::ParticleCollection) = unique(particles(b))
 
 ## Weighted ##
 
+"""
+    WeightedParticleBelief{S}
+
+Weighted particle belief consisting of particles of type `S` and their associated weights.
+"""
 mutable struct WeightedParticleBelief{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
     weights::Vector{Float64}
