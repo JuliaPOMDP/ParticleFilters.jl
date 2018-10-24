@@ -1,6 +1,14 @@
 struct PredictModel{S, F}
     f::F
 end
+
+"""
+    PredictModel{S}(f::Function)
+
+Create a prediction model for use in a [`BasicParticleFilter`](@ref)
+
+See [`ParticleFilterModel`](@ref) for descriptions of `S` and `f`.
+"""
 PredictModel{S}(f::F) where {S, F<:Function} = PredictModel{S, F}(f)
 
 function predict!(pm, m::PredictModel, b, u, rng)
@@ -12,6 +20,13 @@ end
 
 particle_memory(m::PredictModel{S}) where S = S[]
 
+"""
+    ReweightModel(g::Function)
+
+Create a reweighting model for us in a [`BasicParticleFilter`](@ref).
+
+See [`ParticleFilterModel`](@ref) for a description of `g`.
+"""
 struct ReweightModel{G}
     g::G
 end
