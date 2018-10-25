@@ -1,5 +1,7 @@
 # Basic Particle Filter
 
+## Update Steps
+
 The basic particle filtering step in ParticleFilters.jl consists of three steps:
 
 1. Prediction (or propagation) - each state particle is simulated forward one step in time
@@ -28,4 +30,5 @@ reweight!
 resample
 predict
 reweight
+particle_memory
 ```

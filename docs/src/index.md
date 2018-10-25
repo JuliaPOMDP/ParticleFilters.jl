@@ -6,7 +6,7 @@ In particular it provides both weighted and unweighted [particle belief types](@
 
 Additionally, an important requirement for a particle filter is efficient resampling. This package provides O(n) [resamplers](@ref).
 
-Dynamics and measurement models for the filters can be specified as a [`ParticleFilterModel`](@ref) or [`POMDP`](https://github.com/JuliaPOMDP/POMDPs.jl).
+Dynamics and measurement models for the filters can be specified as a [`ParticleFilterModel`](@ref) or a [`POMDP`](https://github.com/JuliaPOMDP/POMDPs.jl) or a custom user-defined type.
 
 The simplest sampling-importance-resampling Particle filter can be constructed with [SIRParticleFilter](@ref). [BasicParticleFilter](@ref) provides a more flexible structure.
 

@@ -33,6 +33,13 @@ export
 
 export
     resample,
+    predict,
+    predict!,
+    reweight,
+    reweight!,
+    particle_memory
+
+export
     n_particles,
     particles,
     weighted_particles,

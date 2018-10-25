@@ -47,7 +47,7 @@ end
 """
     ParticleFilterModel{S}(f, g)
 
-Create a system model suitable for use in a particle filter.
+Create a system model suitable for use in a particle filter. This is a combination prediction/dynamics model and reweighting model.
 
 # Parameters
 - `S` is the state type, e.g. `Float64`, `Vector{Float64}`

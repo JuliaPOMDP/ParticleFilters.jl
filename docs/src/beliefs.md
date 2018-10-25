@@ -1,10 +1,10 @@
 # Beliefs
 
+## Types
+
 ParticleFilters.jl provides two [types of particle beliefs](#Types-1). `ParticleCollection` is little more than a vector of unweighted particles. `WeightedParticleBelief` allows for different weights for each of the particles.
 
 Both are subtypes of `AbstractParticleBelief` and implement the same [particle belief interface](#Interface-1). For probability mass calculations (the [`pdf`](@ref) function), a dictionary containing the normalized sum of weights for all identical particles is created on the first call and cached for efficient future querying.
-
-## Types
 
 ```@docs
 ParticleCollection
