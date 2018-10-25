@@ -25,6 +25,11 @@ function resample(resampler, bp::WeightedParticleBelief, pm::Union{POMDP,MDP}, r
 end
 
 ### Resamplers ###
+```
+    ImportanceResampler(n)
+
+Simple resampler. Uses alias sampling to attain O(n log(n)) performance with uncorrelated samples.
+```
 struct ImportanceResampler
     n::Int
 end
@@ -39,7 +44,11 @@ function resample(r::ImportanceResampler, b::AbstractParticleBelief{S}, rng::Abs
     return ParticleCollection(ps)
 end
 
-# low variance sampling algorithm on page 110 of Probabilistic Robotics by Thrun Burgard and Fox
+"""
+    LowVarianceResampler(n)
+
+Low variance sampling algorithm on page 110 of Probabilistic Robotics by Thrun Burgard and Fox. O(n) runtime, correlated samples, but produces a useful low-variance set.
+"""
 struct LowVarianceResampler
     n::Int
 end
