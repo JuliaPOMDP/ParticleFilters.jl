@@ -9,4 +9,4 @@ ImportanceResampler
 LowVarianceResampler
 ```
 
-New resamplers can be created by implementing the [`resample`](@ref) function for a new type. This is especially important for [handling particle depletion](@ref)
+New resamplers can be created by implementing the [`resample`](@ref) function for a new type. This is especially important for [handling particle depletion](@ref Handling-Particle-Depletion).

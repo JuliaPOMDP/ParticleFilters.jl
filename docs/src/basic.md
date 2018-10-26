@@ -18,13 +18,14 @@ A more flexible structure for building a particle filter is the [`BasicParticleF
 
 ParticleFilters.jl contains implementations of these components that can be mixed and matched. In many cases the prediction and reweighting steps use the same model, for example a [`ParticleFilterModel`](@ref) or a [`POMDP`](https://github.com/JuliaPOMDP/POMDPs.jl).
 
-To carry out the steps individually without the need for pre-allocating memory or doing a full `update` step, the [`predict`](@ref), [`reweight`](@ref), and [`resample`](@ref) functions are provided.
+To carry out the steps individually without the need for pre-allocating memory or doing a full [`update`](@ref) step, the [`predict`](@ref), [`reweight`](@ref), and [`resample`](@ref) functions are provided.
 
 ## Docstrings
 
 ```@docs
 SIRParticleFilter
 BasicParticleFilter
+update
 predict!
 reweight!
 resample

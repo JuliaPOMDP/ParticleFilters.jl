@@ -111,7 +111,7 @@ reweight!(wm, m, b, a, pm, o, rng) = reweight!(wm, m, b, a, pm, o)
 """
     predict(m, b, u, rng)
 
-    Simulate each of the particles in `b` forward one time step using model `m` and contol input `u` returning a vector of states. Calls [`predict!`](@ref) internally - see that function for documentation.
+Simulate each of the particles in `b` forward one time step using model `m` and contol input `u` returning a vector of states. Calls [`predict!`](@ref) internally - see that function for documentation.
 """
 function predict end
 

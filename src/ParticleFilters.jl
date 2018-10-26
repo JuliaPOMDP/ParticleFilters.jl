@@ -58,6 +58,9 @@ export
     support,
     initialize_belief
 
+export
+    SimpleParticleFilter
+
 
 include("beliefs.jl")
 include("basic.jl")
@@ -68,5 +71,6 @@ include("models.jl")
 include("pomdps.jl")
 include("policies.jl")
 include("runfilter.jl")
+include("deprecated.jl")
 
 end # module

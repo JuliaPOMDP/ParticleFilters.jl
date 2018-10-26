@@ -5,31 +5,31 @@
 Sample a new ParticleCollection from `bp`.
 
 Generic domain-independent resamplers should implement this version.
-"""
-function resample end
 
-"""
     resample(resampler, bp::WeightedParticleBelief, predict_model, reweight_model, b, a, o, rng)
 
 Sample a new particle collection from bp with additional information from the arguments to the update function.
 
 This version defaults to `resample(resampler, bp, rng)`. Domain-specific resamplers that wish to add noise to particles, etc. should implement this version.
 """
+function resample end
+
 resample(resampler, bp::WeightedParticleBelief, pm, rm, b, a, o, rng) = resample(resampler, bp, rng)
 
 function resample(resampler, bp::WeightedParticleBelief, pm::Union{POMDP,MDP}, rm, b, a, o, rng)
-    if isempty(particles(bp)) && all(isterminal(model, s) for s in particles(b))
+    if weight_sum(bp) == 0.0 && all(isterminal(model, s) for s in particles(b))
         error("Particle filter update error: all states in the particle collection were terminal.")
     end
     resample(resampler, bp, rng)
 end
 
 ### Resamplers ###
-```
+
+"""
     ImportanceResampler(n)
 
 Simple resampler. Uses alias sampling to attain O(n log(n)) performance with uncorrelated samples.
-```
+"""
 struct ImportanceResampler
     n::Int
 end
