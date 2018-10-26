@@ -7,6 +7,7 @@ using POMDPSimulators
 using Random
 import ParticleFilters: obs_weight
 import POMDPs: observation
+using NBInclude
 
 struct P <: POMDP{Nothing, Nothing, Nothing} end
 @testset "!implemented" begin
@@ -85,4 +86,18 @@ end
     # because baby is hungry, policy should feed (return true)
     @test action(policy, b) == true
     @test isapprox(value(policy, b), -29.4557)
+end
+
+@testset "data series" begin
+    cd("../notebooks") do
+        @nbinclude("../notebooks/Filtering-a-Trajectory-or-Data-Series.ipynb")
+    end
+end
+
+@testset "feedback" begin
+    @nbinclude("../notebooks/Using-a-Particle-Filter-for-Feedback-Control.ipynb"; softscope=true)
+end
+
+@testset "pomdps" begin
+    @nbinclude("../notebooks/Using-a-Particle-Filter-with-POMDPs-jl.ipynb")
 end
