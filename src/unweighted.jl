@@ -28,7 +28,7 @@ function update(up::UnweightedParticleFilter, b::ParticleCollection, a, o)
         warn("""
              Particle Depletion!
 
-             The UnweightedParticleFilter generated no particles consistent with observation $o. Consider upgrading to a SIRParticleFilter or a SimpleParticleFilter or creating your own domain-specific updater.
+             The UnweightedParticleFilter generated no particles consistent with observation $o. Consider upgrading to a SIRParticleFilter or a BasicParticleFilter or creating your own domain-specific updater.
              """
             )
     end

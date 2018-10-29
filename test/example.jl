@@ -4,41 +4,43 @@ using StaticArrays
 using LinearAlgebra
 using Random
 
-struct DblIntegrator2D 
-    W::Matrix{Float64} # Process noise covariance
-    V::Matrix{Float64} # Observation noise covariance
-    dt::Float64        # Time step
-end
+# 2D Double Integrator
 # state is [x, y, xdot, ydot];
 
-# generates a new state from current state s and control a
-function ParticleFilters.generate_s(model::DblIntegrator2D, s, a, rng::AbstractRNG)
-    dt = model.dt
-    A = [1.0 0.0 dt 0.0; 0.0 1.0 0.0 dt; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0]
-    B = [0.5*dt^2 0.0; 0.0 0.5*dt^2; dt 0.0; 0.0 dt]
-    return A*s + B*a + rand(rng, MvNormal(model.W))
-end
+const dt = 0.1
+const A = [1.0 0.0 dt  0.0;
+           0.0 1.0 0.0 dt ;
+           0.0 0.0 1.0 0.0;
+           0.0 0.0 0.0 1.0]
 
-# returns the observation distribution for state sp (and action a)
-function ParticleFilters.observation(model::DblIntegrator2D, a, sp)
-    return MvNormal(sp[1:2], model.V)
-end
+const B = [0.5*dt^2 0.0     ;
+           0.0      0.5*dt^2;
+           dt       0.0     ;
+           0.0      dt      ]
+
+const W = Matrix(0.001*Diagonal{Float64}(I, 4)) # Process noise covariance
+const V = Matrix(Diagonal{Float64}(I, 2)) # Measurement noise covariance
+
+f(x, u, rng) = A*x + B*u + rand(rng, MvNormal(W))
+g(x0, u, x, y) = pdf(MvNormal(x[1:2], V), y)
+model = ParticleFilterModel{Vector{Float64}}(f, g)
+
+h(x, rng) = rand(rng, MvNormal(x[1:2], V))
 
 @testset "example" begin
     N = 1000
-    model = DblIntegrator2D(0.001*Diagonal{Float64}(I, 4), Diagonal{Float64}(I, 2), 0.1)
     filter = SIRParticleFilter(model, N)
     Random.seed!(1)
     rng = Random.GLOBAL_RNG
     b = ParticleCollection([4.0*rand(4).-2.0 for i in 1:N])
-    s = [0.0, 1.0, 1.0, 0.0]
+    x = [0.0, 1.0, 1.0, 0.0]
     for i in 1:100
         print(".")
         m = mean(b)
-        a = [-m[1], -m[2]] # try to orbit the origin
-        s = generate_s(model, s, a, rng)
-        o = rand(observation(model, a, s))
-        b = update(filter, b, a, o)
+        u = [-m[1], -m[2]] # try to orbit the origin
+        x = f(x, u, rng)
+        y = h(x, rng)
+        b = update(filter, b, u, y)
 
         # scatter([p[1] for p in particles(b)], [p[2] for p in particles(b)], color=:black, markersize=0.1, label="")
         # scatter!([s[1]], [s[2]], color=:blue, xlim=(-5,5), ylim=(-5,5), title=t, label="")

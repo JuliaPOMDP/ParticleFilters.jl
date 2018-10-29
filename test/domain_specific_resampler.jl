@@ -4,9 +4,12 @@ end
 
 LDResampler(n::Int) = LDResampler(LowVarianceResampler(n))
 
+ParticleFilters.n_init_samples(r::LDResampler) = n_init_samples(r.lv)
+
 function ParticleFilters.resample(r::LDResampler,
                                   bp::WeightedParticleBelief,
-                                  m::LightDark1D,
+                                  pm::LightDark1D,
+                                  rm::LightDark1D,
                                   b,
                                   a,
                                   o,
@@ -17,13 +20,12 @@ function ParticleFilters.resample(r::LDResampler,
     return resample(r.lv, bp, rng)
 end
 
-ParticleFilters.resample(r::LDResampler, d, rng::AbstractRNG) = resample(r.lv, d, rng)
 
 @testset "domain_specific" begin
 
 n = 100
 m = LightDark1D()
-up = SimpleParticleFilter(m, LDResampler(n))
+up = BasicParticleFilter(m, LDResampler(n), n)
 p = FunctionPolicy(b->0)
 
 bp = first(stepthrough(m, p, up, "bp"))

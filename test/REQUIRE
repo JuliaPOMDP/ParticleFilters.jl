@@ -2,3 +2,11 @@ Distributions
 StaticArrays
 POMDPModels
 POMDPSimulators
+POMDPModelTools
+NBInclude
+Plots
+Random
+DelimitedFiles
+LinearAlgebra
+POMDPPolicies
+Reel
