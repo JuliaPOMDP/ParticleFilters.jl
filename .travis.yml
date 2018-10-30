@@ -8,14 +8,19 @@ julia:
   - 1.0
 notifications:
   email: false
-# uncomment the following lines to override the default test script
-# script:
-#   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#   - julia -e 'Pkg.clone(pwd()); Pkg.build("ParticleFilters")'
-#     # - julia -e 'include(Pkg.dir("ParticleFilters", "test", "build.jl"))'
-#   - julia -e 'Pkg.test("ParticleFilters"; coverage=true)'
 after_success:
   # push coverage results to Coveralls
   - julia -e 'cd(Pkg.dir("ParticleFilters")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
   # push coverage results to Codecov
   - julia -e 'cd(Pkg.dir("ParticleFilters")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+
+jobs:
+  include:
+    - stage: "Documentation"
+      julia: 1.0
+      os: linux
+      script:
+        - julia --project=docs/ -e 'using Pkg; Pkg.instantiate();
+                                    Pkg.develop(PackageSpec(path=pwd()))'
+        - julia --project=docs/ docs/make.jl
+      after_success: skip
