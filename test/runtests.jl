@@ -90,9 +90,14 @@ end
 
 
 is_ci = get(ENV, "CI", "false") == "true"
-is_travis_ci = get(ENV, "TRAVIS", "false") == "true"
+is_travis = get(ENV, "TRAVIS", "false") == "true"
 
-if is_ci && !is_travis_ci
+@show is_ci
+@show is_travis
+
+@warn("Notebook smoke testing is disabled on JuliaCI. We should re-enable it asap")
+
+if !is_ci || is_travis
     @testset "data series" begin
         cd("../notebooks") do
             @nbinclude("../notebooks/Filtering-a-Trajectory-or-Data-Series.ipynb")
