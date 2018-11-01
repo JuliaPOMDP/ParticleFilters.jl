@@ -88,16 +88,22 @@ end
     @test isapprox(value(policy, b), -29.4557)
 end
 
-@testset "data series" begin
-    cd("../notebooks") do
-        @nbinclude("../notebooks/Filtering-a-Trajectory-or-Data-Series.ipynb")
+
+is_ci = get(ENV, "CI", "false") == "true"
+is_travis_ci = get(ENV, "TRAVIS", "false") == "true"
+
+if is_ci && !is_travis_ci
+    @testset "data series" begin
+        cd("../notebooks") do
+            @nbinclude("../notebooks/Filtering-a-Trajectory-or-Data-Series.ipynb")
+        end
     end
-end
 
-@testset "feedback" begin
-    @nbinclude("../notebooks/Using-a-Particle-Filter-for-Feedback-Control.ipynb"; softscope=true)
-end
+    @testset "feedback" begin
+        @nbinclude("../notebooks/Using-a-Particle-Filter-for-Feedback-Control.ipynb"; softscope=true)
+    end
 
-@testset "pomdps" begin
-    @nbinclude("../notebooks/Using-a-Particle-Filter-with-POMDPs-jl.ipynb")
+    @testset "pomdps" begin
+        @nbinclude("../notebooks/Using-a-Particle-Filter-with-POMDPs-jl.ipynb")
+    end
 end
