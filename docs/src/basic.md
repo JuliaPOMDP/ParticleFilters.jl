@@ -2,7 +2,7 @@
 
 ## Update Steps
 
-The basic particle filtering step in ParticleFilters.jl consists of three steps:
+The basic particle filtering step in ParticleFilters.jl is implemented in the [`update`](@ref) function, and consists of three steps:
 
 1. Prediction (or propagation) - each state particle is simulated forward one step in time
 2. Reweighting - an explicit measurement (observation) model is used to calculate a new weight
