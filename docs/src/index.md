@@ -10,6 +10,24 @@ Dynamics and measurement models for the filters can be specified as a [`Particle
 
 The simplest sampling-importance-resampling Particle filter can be constructed with [`SIRParticleFilter`](@ref). [`BasicParticleFilter`](@ref) provides a more flexible structure.
 
+Basic setup of a model is as follows:
+```julia
+using ParticleFilters, Distributions
+
+dynamics(x, u, rng) = x + u + randn(rng)
+y_likelihood(x_previous, u, x, y) = pdf(Normal(), y - x)
+model = ParticleFilterModel{Float64}(dynamics, y_likelihood)
+pf = SIRParticleFilter(model, 10)
+```
+Then the [`update`](@ref) function can be used to perform a particle filter update.
+```julia
+b = ParticleCollection([1.0, 2.0, 3.0, 4.0])
+u = 1.0
+y = 3.0
+
+b_new = update(pf, b, u, y)
+```
+
 There are tutorials for three ways to use the particle filters:
 1. As an [estimator for feedback control](https://github.com/JuliaPOMDP/ParticleFilters.jl/notebooks/Using-a-Particle-Filter-for-Feedback-Control.ipynb),
 2. to [filter time-series measurements](https://github.com/JuliaPOMDP/ParticleFilters.jl/notebooks/Filtering-a-Trajectory-or-Data-Series.ipynb), and

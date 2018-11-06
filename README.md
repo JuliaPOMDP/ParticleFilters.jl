@@ -18,6 +18,27 @@ Pkg.add("ParticleFilters")
 
 # Usage
 
+Basic setup might look like this:
+```julia
+using ParticleFilters, Distributions
+
+dynamics(x, u, rng) = x + u + randn(rng)
+y_likelihood(x_previous, u, x, y) = pdf(Normal(), y - x)
+
+model = ParticleFilterModel{Float64}(dynamics, y_likelihood)
+pf = SIRParticleFilter(model, 10)
+```
+Then the `update` function can be used to perform a particle filter update.
+```julia
+b = ParticleCollection([1.0, 2.0, 3.0, 4.0])
+u = 1.0
+y = 3.0
+
+b_new = update(pf, b, u, y)
+```
+
+This is a very simple example and the framework can accommodate a variety of more complex use cases. More details can be found in the documentation linked to below.
+
 There are tutorials for three ways to use the particle filters:
 1. As an [estimator for feedback control](notebooks/Using-a-Particle-Filter-for-Feedback-Control.ipynb),
 2. to [filter time-series measurements](notebooks/Filtering-a-Trajectory-or-Data-Series.ipynb), and
