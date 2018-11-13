@@ -5,8 +5,7 @@ using Test
 using POMDPPolicies
 using POMDPSimulators
 using Random
-import ParticleFilters: obs_weight
-import POMDPs: observation
+using Distributions
 using NBInclude
 
 struct P <: POMDP{Nothing, Nothing, Nothing} end
@@ -15,7 +14,7 @@ struct P <: POMDP{Nothing, Nothing, Nothing} end
     @test !@implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing)
     @test !@implemented obs_weight(::P, ::Nothing, ::Nothing)
 end
-obs_weight(::P, ::Nothing, ::Nothing, ::Nothing) = 1.0
+ParticleFilters.obs_weight(::P, ::Nothing, ::Nothing, ::Nothing) = 1.0
 
 @testset "implemented" begin
     @test @implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing)
@@ -24,12 +23,13 @@ obs_weight(::P, ::Nothing, ::Nothing, ::Nothing) = 1.0
     @test obs_weight(P(), nothing, nothing, nothing, nothing) == 1.0
 end
 
-observation(::P, ::Nothing) = nothing
+POMDPs.observation(::P, ::Nothing) = nothing
 @test @implemented obs_weight(::P, ::Nothing, ::Nothing)
 
 include("example.jl")
 include("domain_specific_resampler.jl")
 
+struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
 @testset "infer" begin
     p = TigerPOMDP()
     filter = SIRParticleFilter(p, 10000)
@@ -69,6 +69,11 @@ include("domain_specific_resampler.jl")
         wp1 = @inferred collect(weighted_particles(ParticleCollection([1,2])))
         wp2 = @inferred collect(weighted_particles(WeightedParticleBelief([1,2], [0.5, 0.5])))
         @test wp1 == wp2
+    end
+
+    @testset "normal" begin
+        pf = SIRParticleFilter(ContinuousPOMDP(), 100)
+        ps = @inferred initialize_belief(pf, Normal())
     end
 end
 

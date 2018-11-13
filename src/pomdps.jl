@@ -52,18 +52,35 @@ end
 
 function initialize_belief(up::BasicParticleFilter, d::D) where D
     # using weighted iterator here is more likely to be order n than just calling rand() repeatedly
-    # but, this implementation may change in the future
-    if @implemented(support(::D)) && @implemented(pdf(::D, ::typeof(first(support(d)))))
-    # if @implemented(weighted_iterator(::D))
-        S = typeof(first(support(d)))
-        particles = S[]
-        weights = Float64[]
-        for (s, w) in weighted_iterator(d)
-            push!(particles, s)
-            push!(weights, w)
+    # but, this implementation is problematic and may change in the future
+    try
+        if @implemented(support(::D)) &&
+            @implemented(iterate(::typeof(support(d)))) &&
+            @implemented(pdf(::D, ::typeof(first(support(d)))))
+                S = typeof(first(support(d)))
+                particles = S[]
+                weights = Float64[]
+                for (s, w) in weighted_iterator(d)
+                    push!(particles, s)
+                    push!(weights, w)
+                end
+                return resample(ImportanceResampler(up.n_init), WeightedParticleBelief(particles, weights), up.rng)
         end
-        return resample(ImportanceResampler(up.n_init), WeightedParticleBelief(particles, weights), up.rng)
-    else
-        return ParticleCollection(collect(rand(up.rng, d) for i in 1:up.n_init))
+    catch ex
+        if ex isa MethodError
+            @warn("""
+                Suppressing MethodError in initialize_belief in ParticleFilters.jl. Please file an issue here:
+                
+                https://github.com/JuliaPOMDP/ParticleFilters.jl/issues/new
+
+                The error was
+
+                $(sprint(showerror, ex))
+                  """, maxlog=1)
+        else
+            rethrow(ex)
+        end
     end
+
+    return ParticleCollection(collect(rand(up.rng, d) for i in 1:up.n_init))
 end
