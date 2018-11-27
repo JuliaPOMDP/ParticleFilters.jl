@@ -31,7 +31,7 @@ b_new = update(pf, b, u, y)
 There are tutorials for three ways to use the particle filters:
 1. As an [estimator for feedback control](https://github.com/JuliaPOMDP/ParticleFilters.jl/notebooks/Using-a-Particle-Filter-for-Feedback-Control.ipynb),
 2. to [filter time-series measurements](https://github.com/JuliaPOMDP/ParticleFilters.jl/notebooks/Filtering-a-Trajectory-or-Data-Series.ipynb), and
-3. as an [updater for POMDPs.jl](https://github.com/JuliaPOMDP/ParticleFilters.jl/notebooks/Using-a-Particle-Filter-with-POMDPs-jl.ipynb).
+3. as an [updater for POMDPs.jl](https://github.com/JuliaPOMDP/ParticleFilters.jl/blob/master/notebooks/Using-a-Particle-Filter-with-POMDPs-jl.ipynb).
 
 For documentation on all aspects of the package, see the contents below.
 
