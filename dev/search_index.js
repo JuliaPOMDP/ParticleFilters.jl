@@ -77,7 +77,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Basic Particle Filter",
     "title": "ParticleFilters.predict",
     "category": "function",
-    "text": "predict(m, b, u, rng)\n\nSimulate each of the particles in b forward one time step using model m and contol input u returning a vector of states. Calls predict! internally - see that function for documentation.\n\n\n\n\n\n"
+    "text": "predict(m, b, u, rng)\n\nSimulate each of the particles in b forward one time step using model m and contol input u returning a vector of states. Calls predict! internally - see that function for documentation.\n\nThis function is provided for convenience only. New models should implement predict!.\n\n\n\n\n\n"
 },
 
 {
@@ -85,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Basic Particle Filter",
     "title": "ParticleFilters.reweight",
     "category": "function",
-    "text": "reweight(m, b, u, pm, y)\n\nReturn a vector of likelihood weights for each particle in pm given observation y.\n\npm can be generated with predict(m, b, u, rng).\n\n\n\n\n\n"
+    "text": "reweight(m, b, u, pm, y)\n\nReturn a vector of likelihood weights for each particle in pm given observation y.\n\npm can be generated with predict(m, b, u, rng).\n\nThis function is provided for convenience only - new reweighting models should implement reweight!.\n\n\n\n\n\n"
 },
 
 {
