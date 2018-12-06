@@ -16,9 +16,7 @@ function predict!(pm, m::POMDP, b, a, rng)
     all_terminal = true
     for i in 1:n_particles(b)
         s = particle(b, i)
-        if isterminal(m, s)
-            pm[i] = undef
-        else
+        if !isterminal(m, s)
             all_terminal = false
             sp = generate_s(m, s, a, rng)
             pm[i] = sp

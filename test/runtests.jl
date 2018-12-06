@@ -4,6 +4,7 @@ using POMDPModels
 using Test
 using POMDPPolicies
 using POMDPSimulators
+using POMDPModelTools
 using Random
 using Distributions
 using NBInclude
@@ -75,6 +76,17 @@ struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
         pf = SIRParticleFilter(ContinuousPOMDP(), 100)
         ps = @inferred initialize_belief(pf, Normal())
     end
+end
+
+struct TerminalPOMDP <: POMDP{Int, Int, Float64} end
+POMDPs.isterminal(::TerminalPOMDP, s) = s == 1
+POMDPs.observation(::TerminalPOMDP, a, sp) = Normal(sp)
+POMDPs.transition(::TerminalPOMDP, s, a) = Deterministic(s+a)
+@testset "pomdp terminal" begin
+    pomdp =  TerminalPOMDP()
+    pf = SIRParticleFilter(pomdp, 100)
+    bp = update(pf, initialize_belief(pf, Categorical([0.5, 0.5])), -1, 1.0)
+    @test all(particles(bp) .== 1)
 end
 
 @testset "alpha" begin
