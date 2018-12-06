@@ -112,6 +112,8 @@ reweight!(wm, m, b, a, pm, o, rng) = reweight!(wm, m, b, a, pm, o)
     predict(m, b, u, rng)
 
 Simulate each of the particles in `b` forward one time step using model `m` and contol input `u` returning a vector of states. Calls [`predict!`](@ref) internally - see that function for documentation.
+
+This function is provided for convenience only. New models should implement `predict!`.
 """
 function predict end
 
@@ -129,6 +131,8 @@ predict(f::BasicParticleFilter, args...) = predict(f.predict_model, args...)
 Return a vector of likelihood weights for each particle in `pm` given observation `y`.
 
 `pm` can be generated with `predict(m, b, u, rng)`.
+
+This function is provided for convenience only - new reweighting models should implement `reweight!`.
 """
 function reweight end
 
