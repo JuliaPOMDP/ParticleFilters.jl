@@ -17,7 +17,7 @@ function resample end
 resample(resampler, bp::WeightedParticleBelief, pm, rm, b, a, o, rng) = resample(resampler, bp, rng)
 
 function resample(resampler, bp::WeightedParticleBelief, pm::Union{POMDP,MDP}, rm, b, a, o, rng)
-    if weight_sum(bp) == 0.0 && all(isterminal(model, s) for s in particles(b))
+    if weight_sum(bp) == 0.0 && all(isterminal(pm, s) for s in particles(b))
         error("Particle filter update error: all states in the particle collection were terminal.")
     end
     resample(resampler, bp, rng)
