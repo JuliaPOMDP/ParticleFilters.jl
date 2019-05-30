@@ -33,6 +33,7 @@ export
 
 export
     resample,
+	resample_cem, # RpB
     predict,
     predict!,
     reweight,
@@ -55,6 +56,7 @@ export
     pdf,
     mode,
     update,
+	update_cem, #RpB
     support,
     initialize_belief
 

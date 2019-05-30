@@ -1,3 +1,4 @@
+using Distributions
 ### Resample Interface ###
 """
     resample(resampler, bp::AbstractParticleBelief, rng::AbstractRNG)
@@ -81,3 +82,27 @@ end
 n_init_samples(r::Union{LowVarianceResampler, ImportanceResampler}) = r.n
 
 resample(f::Function, d::Any, rng::AbstractRNG) = f(d, rng)
+
+	# RpB: Function to convert matrix to array of arrays
+# Call on the transpose of the input matrix
+function slicematrix(A::AbstractMatrix)
+    return [A[i, :] for i in 1:size(A,1)]
+end
+
+#XXX Need to un-harcoded the numtop that is fixed now
+function resample_cem(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
+@show "resample_cem triggered alright"
+	sortedidx = sortperm(b.weights,rev=true)
+	numtop = 200 # For the 1000 particle case being tested
+	best_particles = b.particles[sortedidx[1:numtop]]
+	temp = hcat(best_particles...)'
+	best_particles = temp'
+	p_distb = fit(MvNormal,best_particles)
+	#@show p_distb
+	new_p_mat = rand(p_distb,re.n)
+	new_p_array = slicematrix(new_p_mat')
+	#@show typeof(new_p_array)
+	#@show size(new_p_array)
+	#@show new_p_array
+	return ParticleCollection(new_p_array)
+end

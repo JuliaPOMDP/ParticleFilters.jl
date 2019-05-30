@@ -31,7 +31,7 @@ function runexp()
 
 	model = ParticleFilterModel{Vector{Float64}}(f, g)
 
-	N = 10  # Rpb: Was 1000 before
+	N = 1000  # Rpb: Was 1000 before
 
 	filter = SIRParticleFilter(model, N)
 
@@ -40,7 +40,7 @@ function runexp()
 	x = [0.0, 1.0, 1.0, 0.0]
 
 	plots = []
-	for i in 1:10    #RpB: was 100 before
+	for i in 1:100    #RpB: was 100 before
 	    print(".")
 	    m = mean(b) # b is an array of particles. Each element in b is a 4 element tuple
 	    u = [-m[1], -m[2]] # Control law - try to orbit the origin
@@ -48,12 +48,15 @@ function runexp()
 	    y = h(x, rng)
 	    b = update(filter, b, u, y)
 
+		# RpB: This is the update_cem
+		b_cem = update_cem(filter,b,u,y)
+
 	    plt = scatter([p[1] for p in particles(b)], [p[2] for p in particles(b)], 
 		color=:black, markersize=0.1, label="")
 	    scatter!(plt, [x[1]], [x[2]], color=:blue, xlim=(-5,5), ylim=(-5,5), label="")
 	    
 		# RpB: Testing adding another group of particles
-	    scatter!([p[1] for p in particles(b)], [p[2]+1.0 for p in particles(b)], 
+	    scatter!([p[1] for p in particles(b_cem)], [p[2] for p in particles(b_cem)], 
 		color=:red, markersize=0.1, label="")
 	    push!(plots, plt)
 	end
@@ -64,6 +67,8 @@ plots = runexp()
 
 @show length(plots)
 
+
+	# For writing a gif file from the plots array using Reel
 frames = Frames(MIME("image/png"), fps=10)
 for plt in plots
     print(".")
