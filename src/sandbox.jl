@@ -4,6 +4,7 @@ using StaticArrays
 using LinearAlgebra
 using Random
 using Plots
+using Reel
 
 function runexp()
 	rng = Random.GLOBAL_RNG
@@ -30,7 +31,7 @@ function runexp()
 
 	model = ParticleFilterModel{Vector{Float64}}(f, g)
 
-	N = 10
+	N = 10  # Rpb: Was 1000 before
 
 	filter = SIRParticleFilter(model, N)
 
@@ -39,7 +40,7 @@ function runexp()
 	x = [0.0, 1.0, 1.0, 0.0]
 
 	plots = []
-	for i in 1:2    #RpB: was 100 before
+	for i in 1:10    #RpB: was 100 before
 	    print(".")
 	    m = mean(b) # b is an array of particles. Each element in b is a 4 element tuple
 	    u = [-m[1], -m[2]] # Control law - try to orbit the origin
@@ -50,11 +51,22 @@ function runexp()
 	    plt = scatter([p[1] for p in particles(b)], [p[2] for p in particles(b)], 
 		color=:black, markersize=0.1, label="")
 	    scatter!(plt, [x[1]], [x[2]], color=:blue, xlim=(-5,5), ylim=(-5,5), label="")
+	    
+		# RpB: Testing adding another group of particles
+	    scatter!([p[1] for p in particles(b)], [p[2]+1.0 for p in particles(b)], 
+		color=:red, markersize=0.1, label="")
 	    push!(plots, plt)
 	end
 	return plots
 end
-@show "Calling runexp"
+@show "Sandbox says: Calling runexp"
 plots = runexp()
 
 @show length(plots)
+
+frames = Frames(MIME("image/png"), fps=10)
+for plt in plots
+    print(".")
+    push!(frames, plt)
+end
+write("output.gif", frames)
