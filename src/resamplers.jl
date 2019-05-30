@@ -56,10 +56,10 @@ end
 function resample(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
     ps = Array{S}(undef, re.n)
     r = rand(rng)*weight_sum(b)/re.n
-    c = weight(b,1)
+    c = weight(b,1) # weight of the first particle in the belief set
     i = 1
     U = r
-    for m in 1:re.n
+    for m in 1:re.n # Loop over all the particles
         while U > c
             i += 1
             c += weight(b, i)

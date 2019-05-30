@@ -20,6 +20,7 @@ end
 
 ## Constructors ##
 function BasicParticleFilter(model, resampler, n::Integer, rng::AbstractRNG=Random.GLOBAL_RNG)
+    # Makes a call to the next constructor given below
     return BasicParticleFilter(model, model, resampler, n, rng)
 end
 
