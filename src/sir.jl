@@ -15,5 +15,6 @@ function SIRParticleFilter(model, n::Int, rng::AbstractRNG)
 end
 
 function SIRParticleFilter(model, n::Int; rng::AbstractRNG=Random.GLOBAL_RNG)
+#@show "SIR 17 trigerred"
     return BasicParticleFilter(model, LowVarianceResampler(n), n, rng)
 end

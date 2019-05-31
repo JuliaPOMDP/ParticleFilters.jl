@@ -4,3 +4,6 @@
 
 # output gif files
 *.gif
+
+# notebook checkpoints
+.ipynb_checkpoints/

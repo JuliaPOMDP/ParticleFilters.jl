@@ -18,6 +18,8 @@ using POMDPModelTools # for weighted_iterator
 import Random: rand
 import Statistics: mean
 
+using Distributions # RpB added for CEM particle filtering where we need to fit to elites
+
 export
     AbstractParticleBelief,
     ParticleCollection,
@@ -29,11 +31,12 @@ export
     UnweightedParticleFilter,
     ParticleFilterModel,
     PredictModel,
-    ReweightModel
+    ReweightModel,
+    CEMParticleFilter, # Rpb Added as a new file cem_filter.jl
+    CEMResampler # RpB Added to resamplers.jl
 
 export
     resample,
-	resample_cem, # RpB
     predict,
     predict!,
     reweight,
@@ -56,7 +59,6 @@ export
     pdf,
     mode,
     update,
-	update_cem, #RpB
     support,
     initialize_belief
 
@@ -74,5 +76,6 @@ include("pomdps.jl")
 include("policies.jl")
 include("runfilter.jl")
 include("deprecated.jl")
+include("cem_filter.jl") # RpB added as a new file cem_filter.jl
 
 end # module

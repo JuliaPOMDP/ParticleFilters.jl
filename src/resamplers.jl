@@ -1,4 +1,3 @@
-using Distributions
 ### Resample Interface ###
 """
     resample(resampler, bp::AbstractParticleBelief, rng::AbstractRNG)
@@ -55,6 +54,7 @@ struct LowVarianceResampler
 end
 
 function resample(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
+#@show "resample triggered alright"
     ps = Array{S}(undef, re.n)
     r = rand(rng)*weight_sum(b)/re.n
     c = weight(b,1) # weight of the first particle in the belief set
@@ -83,6 +83,16 @@ n_init_samples(r::Union{LowVarianceResampler, ImportanceResampler}) = r.n
 
 resample(f::Function, d::Any, rng::AbstractRNG) = f(d, rng)
 
+
+
+"""
+    CEMResampler(n)
+
+Resample using the Cross Entropy Method
+"""
+struct CEMResampler
+    n::Int
+end
 	# RpB: Function to convert matrix to array of arrays
 # Call on the transpose of the input matrix
 function slicematrix(A::AbstractMatrix)
@@ -90,8 +100,8 @@ function slicematrix(A::AbstractMatrix)
 end
 
 #XXX Need to un-harcoded the numtop that is fixed now
-function resample_cem(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
-@show "resample_cem triggered alright"
+function resample(re::CEMResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
+#@show "cem resampple triggered alright"
 	sortedidx = sortperm(b.weights,rev=true)
 	numtop = 200 # For the 1000 particle case being tested
 	best_particles = b.particles[sortedidx[1:numtop]]

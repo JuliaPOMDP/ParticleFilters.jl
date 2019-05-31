@@ -45,6 +45,7 @@ This should usually be an empty `Vector{S}` where `S` is the type of the state f
 function particle_memory end
 
 function update(up::BasicParticleFilter, b::ParticleCollection, a, o)
+#@show "update triggered alright"
     pm = up._particle_memory
     wm = up._weight_memory
     resize!(pm, n_particles(b))
@@ -58,20 +59,6 @@ function update(up::BasicParticleFilter, b::ParticleCollection, a, o)
                     up.reweight_model,
                     b, a, o,
                     up.rng)
-end
-
-	# RpB: CEM Update method
-function update_cem(up::BasicParticleFilter, b::ParticleCollection, a, o)
-@show "update_cem triggered alright"
-    pm = up._particle_memory
-    wm = up._weight_memory
-    resize!(pm, n_particles(b))
-    resize!(wm, n_particles(b))
-    predict!(pm, up.predict_model, b, a, o, up.rng)
-    reweight!(wm, up.reweight_model, b, a, pm, o, up.rng)
-
-    return resample_cem(up.resampler,
-                    WeightedParticleBelief(pm, wm, sum(wm), nothing),up.rng)
 end
 
 function Random.seed!(f::BasicParticleFilter, seed)
