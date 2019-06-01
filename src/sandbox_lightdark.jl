@@ -13,7 +13,8 @@ using Reel
 function runexp()
 	pomdp = LightDark1D()
 	N=1000
-	up = SIRParticleFilter(pomdp, N)
+#	up = SIRParticleFilter(pomdp, N) # The original sir filter
+	up = CEMParticleFilter(pomdp, N) # RpB Cem filter
 	policy = FunctionPolicy(b->1)
 	b0 = POMDPModels.LDNormalStateDist(-15.0, 5.0)
 	hr = HistoryRecorder(max_steps=40)
@@ -23,7 +24,7 @@ function runexp()
 end	# End of experiment runner
 
 function write_gif_histogram(history)
-@show making gif
+@show "making gif"
 	frames = Frames(MIME("image/png"), fps=4)
 	for b in belief_hist(history)
 	    ys = [s.y for s in particles(b)]
@@ -44,5 +45,5 @@ end	# End of gif making function
 @show "Running light dark exp"
 history = runexp()
 
-makegif = false
+makegif = true
 if makegif write_gif_histogram(history) end

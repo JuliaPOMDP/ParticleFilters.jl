@@ -103,8 +103,9 @@ end
 function resample(re::CEMResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
 #@show "cem resampple triggered alright"
 	sortedidx = sortperm(b.weights,rev=true)
-	numtop = 200 # For the 1000 particle case being tested
+	numtop = 200 # Top 20% of the number of particles to be selected as elite
 	best_particles = b.particles[sortedidx[1:numtop]]
+@show best_particles
 	temp = hcat(best_particles...)'
 	best_particles = temp'
 	p_distb = fit(MvNormal,best_particles)
