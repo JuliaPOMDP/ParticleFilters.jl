@@ -3,6 +3,13 @@
 
 using Plots
 
+# Function to plot the aircraft
+function plot_aircraft(xpos,ypos)
+	X = xpos - 0.6 .+ [-1,     -0.1,   -0.09,    0.3,  0.7, 0.8, 0.7, 0.3, -0.09,  -0.1, -1];
+	Y = ypos .+ [-0.05, -0.05, -0.4, -0.05, -0.05,0, 0.05, 0.05, 0.4, 0.05, 0.05];
+	return X,Y
+end
+
 
 # Function to plot the ground
 function ground(x)
@@ -30,4 +37,9 @@ plotVectorMountains = vcat(mt1,mt2)
 Mountains = map.(ground,plotVectorMountains)
 
 plot(plotVectorMountains,Mountains)
-savefig("terrain.png")
+#savefig("terrain.png")
+
+plane_X, plane_Y = plot_aircraft(0,4)
+plot!(plane_X,plane_Y)
+
+savefig("terrain_ac.png")
