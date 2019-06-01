@@ -11,7 +11,7 @@ function plot_aircraft(xpos,ypos)
 end
 
 
-# Function to plot the ground
+# Function to create the terrain by calculating y for input x
 function ground(x)
        return (x>=10).*((1-(x-10)/30).*sin(x-10)+((x-10)/30).*sin(1.5*(x-10))+
 	0.2.*(x-10).*(x<=20)+2*(x>20))+(x<=-10).*((1-(-x-10)/30).*sin(-x-10)+
@@ -42,4 +42,7 @@ plot(plotVectorMountains,Mountains)
 plane_X, plane_Y = plot_aircraft(0,4)
 plot!(plane_X,plane_Y)
 
-savefig("terrain_ac.png")
+N = 100 # Number of particles
+particles = [80*rand(1)[1]-40 for i in 1:N]
+scatter!(particles,4*ones(N))
+savefig("terrain+ac+particles.png")
