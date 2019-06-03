@@ -45,7 +45,7 @@ This should usually be an empty `Vector{S}` where `S` is the type of the state f
 function particle_memory end
 
 function update(up::BasicParticleFilter, b::ParticleCollection, a, o)
-#@show "update triggered alright"
+#@show "update trigerred alright"
     pm = up._particle_memory
     wm = up._weight_memory
     resize!(pm, n_particles(b))
