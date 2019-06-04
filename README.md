@@ -6,7 +6,7 @@
 
 ![particles.gif](/img/particles.gif)
 
-This package rovides some simple generic particle filters, and may serve as a template for making custom particle filters and other belief updaters. It is compatible with POMDPs.jl, but does not have to be used with that package.
+This package provides some simple generic particle filters, and may serve as a template for making custom particle filters and other belief updaters. It is compatible with POMDPs.jl, but does not have to be used with that package.
 
 # Installation
 
