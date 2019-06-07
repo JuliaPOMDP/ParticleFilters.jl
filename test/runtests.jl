@@ -95,7 +95,7 @@ end
     # these values were gotten from FIB.jl
     # alphas = [-29.4557 -36.5093; -19.4557 -16.0629]
     alphas = [-16.0629 -19.4557; -36.5093 -29.4557]
-    policy = AlphaVectorPolicy(pomdp, alphas)
+    policy = AlphaVectorPolicy(pomdp, alphas, ordered_actions(pomdp))
 
     # initial belief is 100% confidence in baby being hungry
     b = ParticleCollection([true for i=1:100])
