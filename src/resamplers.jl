@@ -54,7 +54,7 @@ struct LowVarianceResampler
 end
 
 function resample(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
-@show "resample triggered alright"
+#@show "resample triggered alright"
     ps = Array{S}(undef, re.n)
     r = rand(rng)*weight_sum(b)/re.n
     c = weight(b,1) # weight of the first particle in the belief set
@@ -102,7 +102,7 @@ end
 
 #XXX Need to un-harcoded the numtop that is fixed now
 function resample(re::CEMResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
-@show "cem resampple triggered alright"
+#@show "cem resampple triggered alright"
 	sortedidx = sortperm(b.weights,rev=true)
 	numtop = Int(0.2*re.n) # Top 20% of the number of particles to be selected as elite
 	best_particles = b.particles[sortedidx[1:numtop]]

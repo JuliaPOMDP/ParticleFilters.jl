@@ -5,6 +5,7 @@
 # output figures
 *.gif
 *.png
+*.mp4
 
 # notebook checkpoints
 .ipynb_checkpoints/

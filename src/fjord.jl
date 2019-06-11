@@ -71,7 +71,7 @@ function runexp()
 	meas_stdev = 0.1
 	A = [1]
 	B = [0]
-	f(x, u, rng) = x+[1.0]
+	f(x, u, rng) = x #+ [1.0] # Investigating fixed state
 	h(x, rng) = rand(rng, Normal(ypos-ground(x[1]), meas_stdev)) #Generates an observation
 	g(x0, u, x, y) = pdf(Normal(ypos - ground(x[1]), meas_stdev), y) #Creates likelihood
 
@@ -89,7 +89,7 @@ function runexp()
 	plots = []
 plt = plot_terrain_ac_particles(x,ypos,particles(b))
 push!(plots,plt)
-	for i in 1:100    #RpB: was 100 before
+	for i in 1:50    #RpB: was 100 before
 	    print(".")
 	    u = 1
 	    x = f(x, u, rng)
