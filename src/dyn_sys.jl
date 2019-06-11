@@ -91,32 +91,7 @@ function runexp()
 	
 end # End of the runexp function
 
-# Find the mean particle from a collection
-function find_mean_particle(b::ParticleCollection)
-	return mean(b.particles)
-end
-
-"""
-	calc_rmse_old(b:ParticleCollection,x)
-# Arguments
-- x: True state - 4 element array. The first two elems (i.e. x,y coord) are used
-for norm computation
-- b: Collection of particles
-"""
-function calc_rmse_old(b::ParticleCollection,x)
-	#Extract particles from belief
-	particles = b.particles
-	n = n_particles(b)	
-
-	sum_sq_error = 0
-	# Loop over all the particles and store the square norm sum
-	for i in 1:n
-		p = particles[i][1:2]
-		sum_sq_error = sum_sq_error + norm(p-x[1:2])*norm(p-x[1:2])
-	end
-	return sqrt(sum_sq_error/n)
-end
-
+# Uses the norm squared calculation function to find the rmse
 function calc_rmse(b::ParticleCollection,x)
 	norm_vec = calc_norm_squared(b,x)
 	return sqrt(mean(norm_vec))
@@ -138,6 +113,7 @@ function calc_norm_squared(b::ParticleCollection,x)
 	return norm_squared
 end
 
+# Calc the rmse of the top 20% particles in the distribution
 function calc_rmse_elites(b::ParticleCollection,x)
 	particles = b.particles
 	n = n_particles(b)
