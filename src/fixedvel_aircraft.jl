@@ -8,13 +8,63 @@ using Plots
 using Reel
 using Statistics
 
+"""
+Q = V measurement noise covariance
+R = W process noise covariance
+C = I because observation h is basically true state corrupted by noise
+"""
 function kalman_filter(mu,sigma,u,z,A,B,C,R,Q)
 	mu_bar = A*mu + B*u
 	sigma_bar = A*sigma*A' + R
+
 	K = sigma_bar*C'*(inv(C*sigma_bar*C'+Q))
+
 	mu_new = mu_bar+K*(z-C*mu_bar)
 	sigma_new = (I-K*C)*sigma_bar
 	return mu_new,sigma_new
+end
+
+function run_kf(mu_0,sig_0,num_iter)
+	display("Running kalman filter for $(num_iter) iterations")
+	rng = Random.GLOBAL_RNG
+	dt = 0.1	
+	A = [1.0 0.0 dt  0.0;
+	     0.0 1.0 0.0 dt ;
+	     0.0 0.0 1.0 0.0;
+	     0.0 0.0 0.0 1.0]
+
+	B = [0.0 0.0;
+	     0.0 0.0;
+             0.0  0.0;
+             0.0 0.0]
+
+	# Measurement matrix i.e. y = Cx + N(0,V)
+	C = [1.0 0.0 0.0 0.0; 
+	     0.0 1.0 0.0 0.0]
+
+	W = Matrix(0.001*Diagonal{Float64}(I, 4)) # Process noise covariance
+	V = Matrix(5.0*Diagonal{Float64}(I, 2)) # Measurement noise covariance
+
+	f(x, u, rng) = A*x + rand(rng, MvNormal(W))
+	h(x, rng) = rand(rng, MvNormal(x[1:2], V)) #Generates an observation	
+	mu = mu_0
+	sigma = sig_0
+	x = [1.,1.,1.,1.]
+	u = [-1.0,-1.0] # Just a dummy but still needs to be write size to multiply B
+
+	plots = []
+
+	for i in 1:num_iter
+		x = f(x, u, rng)
+		z = h(x, rng)
+		mu,sigma = kalman_filter(mu,sigma,u,z,A,B,C,W,V)
+		
+		plt = scatter([mu[1]], [mu[2]], color=:black, markersize=2.0, label="kf",markershape=:diamond)
+		scatter!(plt, [x[1]], [x[2]], color=:blue, xlim=(-5,15), ylim=(-5,15), 
+			label = "true")
+		push!(plots,plt)
+	end
+	return plots
 end
 
 function runexp(num_particles)
@@ -31,6 +81,7 @@ function runexp(num_particles)
 	     0.0 0.0;
              0.0  0.0;
              0.0 0.0]
+	
 	W = Matrix(0.001*Diagonal{Float64}(I, 4)) # Process noise covariance
 	V = Matrix(5.0*Diagonal{Float64}(I, 2)) # Measurement noise covariance
 
@@ -160,6 +211,8 @@ function run_many_exps(;num_exp,num_particles)
 end
 
 run1exp = false
+runmanyexp = false
+runkf = true
 if run1exp
 	# Single experiment and make associated video	
 	display("Running a single experiment and making associated video")
@@ -167,7 +220,17 @@ if run1exp
 	@show length(plots) # Should be equal to the number of iterations of the particle filter
 	makegif = true
 	if makegif write_particles_gif(plots,"100particles_HighMeasCov.mp4") end
-else
+end
+if runmanyexp
 	# Mulitple experiments to make average rmse plot
 	run_many_exps(num_exp = 100, num_particles = 100)
+end
+if runkf
+	mu_0 = [1.,1.,1.,1.]
+	sig_0 = Matrix(1.0*Diagonal{Float64}(I, 4))
+	num_iter = 100
+	
+	plot_kf = run_kf(mu_0,sig_0,num_iter)
+	makegif = true
+	if makegif write_particles_gif(plot_kf,"KalmanFilter_num_iter_$(num_iter).mp4") end
 end
