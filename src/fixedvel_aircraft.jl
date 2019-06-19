@@ -8,7 +8,16 @@ using Plots
 using Reel
 using Statistics
 
-function runexp()
+function kalman_filter(mu,sigma,u,z,A,B,C,R,Q)
+	mu_bar = A*mu + B*u
+	sigma_bar = A*sigma*A' + R
+	K = sigma_bar*C'*(inv(C*sigma_bar*C'+Q))
+	mu_new = mu_bar+K*(z-C*mu_bar)
+	sigma_new = (I-K*C)*sigma_bar
+	return mu_new,sigma_new
+end
+
+function runexp(num_particles)
 	rng = Random.GLOBAL_RNG
 
 	dt = 0.1 # time step
@@ -22,18 +31,17 @@ function runexp()
 	     0.0 0.0;
              0.0  0.0;
              0.0 0.0]
+	W = Matrix(0.001*Diagonal{Float64}(I, 4)) # Process noise covariance
+	V = Matrix(5.0*Diagonal{Float64}(I, 2)) # Measurement noise covariance
 
-	W = Matrix(0.0*Diagonal{Float64}(I, 4)) # No noise i.e. stochastic
-	V = Matrix(Diagonal{Float64}(I, 2)) # Measurement noise covariance
-
-	f(x, u, rng) = A*x
+	f(x, u, rng) = A*x + rand(rng, MvNormal(W))
 
 	h(x, rng) = rand(rng, MvNormal(x[1:2], V)) #Generates an observation
 	g(x0, u, x, y) = pdf(MvNormal(x[1:2], V), y) #Creates likelihood
 
 	model = ParticleFilterModel{Vector{Float64}}(f, g)
 
-	N = 1000
+	N = num_particles
 
 	filter_sir = SIRParticleFilter(model, N) # Vanilla particle filter
 	filter_cem = CEMParticleFilter(model, N) # CEM filter
@@ -44,31 +52,27 @@ function runexp()
 
 	plots = []
 
-	num_iter = 10
+	num_iter = 100
 	rmse = zeros(num_iter,2)
 	rmse_elites = zeros(num_iter,2)
 
 	for i in 1:num_iter    #RpB: was 100 before
-		@show i
+		#@show i
 		m = mean(b) # b is an array of particles. Each element in b is a 4 element tuple
-		
-		#@show m		
-		u = [-m[1], -m[2]] # Control law - try to orbit the origin
-		@show x		
+		u = [-m[1], -m[2]] # Control law - try to orbit the origin	
 		x = f(x, u, rng)
-		@show x
 		y = h(x, rng)
-		@show y
 		b = update(filter_sir, b, u, y)
-		@show "sir update done"
+		#display("SIR update done")
 		
 		b_cem = update(filter_cem,b,u,y)
-		@show "cem update done"
-		plt = scatter([p[1] for p in particles(b)], [p[2] for p in particles(b)], color=:black, markersize=2.0, label="",markershape=:diamond)
-		scatter!(plt, [x[1]], [x[2]], color=:blue, xlim=(-5,5), ylim=(-5,5), label="")
+		#@show "cem update done"
+		plt = scatter([p[1] for p in particles(b)], [p[2] for p in particles(b)], color=:black, markersize=2.0, label="sir",markershape=:diamond)
+		scatter!(plt, [x[1]], [x[2]], color=:blue, xlim=(-5,15), ylim=(-5,15), 
+			label = "true")
 	    
 		# RpB: Testing adding another group of particles
-		scatter!([p[1] for p in particles(b_cem)], [p[2] for p in particles(b_cem)], color=:red, markersize=2.0, label="",markershape=:cross)
+		scatter!([p[1] for p in particles(b_cem)], [p[2] for p in particles(b_cem)], color=:red, markersize=2.0, label="cem",markershape=:cross)
 		push!(plots, plt)
 
 		
@@ -88,9 +92,9 @@ function runexp()
 	end
 
 	#plot(rmse,labels=["sir","cem"])
-	plot(hcat(rmse,rmse_elites),labels=["sir","cem","sir_el","cem_el"])
-	savefig("rmse.png")
-	return plots
+	#plot(hcat(rmse,rmse_elites),labels=["sir","cem","sir_el","cem_el"])
+	#savefig("rmse.png")
+	return plots,rmse
 	
 end # End of the runexp function
 
@@ -126,20 +130,44 @@ function calc_rmse_elites(b::ParticleCollection,x)
 	return calc_rmse(ParticleCollection(elite_particles),x)
 end
 
-function write_particles_gif(plots)
+function write_particles_gif(plots,filename)
 @show "Making gif"
 	frames = Frames(MIME("image/png"), fps=10)
 	for plt in plots
 	    push!(frames, plt)
 	end
-	write("output.mp4", frames)
+	write(filename, frames)
 	return nothing
 end # End of the reel gif writing function
 
-@show "Start experiement: noisy aircraft"
-plots = runexp()
+# Run the filtering multiple times and average the results from all the experiments
+# Third dimension of the `data` data structure denotes experiment number
+# Each exp returns a table with timeslices in rows and rmse_sir and rmse_cem
+# in columns. Each new table is stacked on top of table from previous experiment
+function run_many_exps(;num_exp,num_particles)	
+	display("Running $(num_exp) experiments with $(num_particles) particles")	
+	data = zeros(100,2,num_exp)
+	for i in 1:num_exp
+		if i%20 == 0.
+			@show i
+		end		
+		plt,data[:,:,i] = runexp(num_particles)
+	end
+	rmse_avg = mean(data,dims=3)[:,:,1] #Extract 100x2 array from 100x2x1 array
+	plot(rmse_avg,labels=["sir","cem"])
+	savefig("rmse_avg_numexps_$(num_exp)_numparticles_$(num_particles)_highCov.png")
+	return nothing
+end
 
-@show length(plots)
-
-makegif = true
-if makegif write_particles_gif(plots) end
+run1exp = false
+if run1exp
+	# Single experiment and make associated video	
+	display("Running a single experiment and making associated video")
+	plots, rmse = runexp(1000)
+	@show length(plots) # Should be equal to the number of iterations of the particle filter
+	makegif = true
+	if makegif write_particles_gif(plots,"100particles_HighMeasCov.mp4") end
+else
+	# Mulitple experiments to make average rmse plot
+	run_many_exps(num_exp = 100, num_particles = 100)
+end

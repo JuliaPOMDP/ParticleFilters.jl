@@ -108,12 +108,14 @@ function resample(re::CEMResampler, b::AbstractParticleBelief{S}, rng::AbstractR
 	best_particles = b.particles[sortedidx[1:numtop]]
 	temp = hcat(best_particles...)'
 	best_particles = temp'
-	p_distb = fit(MvNormal,best_particles)
-	#@show p_distb
-	new_p_mat = rand(p_distb,re.n)
-	new_p_array = slicematrix(new_p_mat')
-	#@show typeof(new_p_array)
-	#@show size(new_p_array)
-	#@show new_p_array
-	return ParticleCollection(new_p_array)
+
+	try
+		p_distb = fit(MvNormal,best_particles)
+		new_p_mat = rand(p_distb,re.n)
+		new_p_array = slicematrix(new_p_mat')
+		return ParticleCollection(new_p_array)
+	catch
+		display("posdef exception was thrown")		
+		return ParticleCollection(b.particles)
+	end
 end
