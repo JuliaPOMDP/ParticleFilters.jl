@@ -27,7 +27,7 @@ end
 function run_kf(mu_0,sig_0,num_iter)
 	display("Running kalman filter for $(num_iter) iterations")
 	rng = Random.GLOBAL_RNG
-	dt = 0.1	
+	dt = 0.1
 	A = [1.0 0.0 dt  0.0;
 	     0.0 1.0 0.0 dt ;
 	     0.0 0.0 1.0 0.0;
@@ -50,7 +50,7 @@ function run_kf(mu_0,sig_0,num_iter)
 	mu = mu_0
 	sigma = sig_0
 	x = [1.,1.,1.,1.]
-	u = [-1.0,-1.0] # Just a dummy but still needs to be write size to multiply B
+	u = [-1.0,-1.0] # Just a dummy but still needs to be correct size to multiply B
 
 	plots = []
 
@@ -60,7 +60,7 @@ function run_kf(mu_0,sig_0,num_iter)
 		mu,sigma = kalman_filter(mu,sigma,u,z,A,B,C,W,V)
 		
 		plt = scatter([mu[1]], [mu[2]], color=:black, markersize=2.0, label="kf",markershape=:diamond)
-		scatter!(plt, [x[1]], [x[2]], color=:blue, xlim=(-5,15), ylim=(-5,15), 
+		scatter!(plt, [x[1]], [x[2]], color=:blue, xlim=(-5,25), ylim=(-5,25), 
 			label = "true")
 		push!(plots,plt)
 	end
@@ -126,7 +126,6 @@ function runexp(num_particles)
 		scatter!([p[1] for p in particles(b_cem)], [p[2] for p in particles(b_cem)], color=:red, markersize=2.0, label="cem",markershape=:cross)
 		push!(plots, plt)
 
-		
 		# Plot the rmse value for the current iteration of particles
 		# Vanilla rmse
  		rmse_sir=calc_rmse(b,x)
@@ -228,7 +227,7 @@ end
 if runkf
 	mu_0 = [1.,1.,1.,1.]
 	sig_0 = Matrix(1.0*Diagonal{Float64}(I, 4))
-	num_iter = 100
+	num_iter = 500
 	
 	plot_kf = run_kf(mu_0,sig_0,num_iter)
 	makegif = true
