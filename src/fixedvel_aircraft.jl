@@ -11,7 +11,7 @@ using Statistics
 """
 Q = V measurement noise covariance
 R = W process noise covariance
-C = I because observation h is basically true state corrupted by noise
+C has to be the correct size to map state to observation
 """
 function kalman_filter(mu,sigma,u,z,A,B,C,R,Q)
 	mu_bar = A*mu + B*u
