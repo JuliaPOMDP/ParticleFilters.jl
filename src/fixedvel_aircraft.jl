@@ -67,7 +67,7 @@ function run_kf(mu_0,sig_0,num_iter)
 	return plots
 end
 
-function runexp(num_particles)
+function runexp(;num_particles,num_iter,meascov)
 	rng = Random.GLOBAL_RNG
 
 	dt = 0.1 # time step
@@ -86,8 +86,8 @@ function runexp(num_particles)
 	C = [1.0 0.0 0.0 0.0; 
 	     0.0 1.0 0.0 0.0]
 
-	W = Matrix(0.001*Diagonal{Float64}(I, 4)) # Process noise covariance
-	V = Matrix(5.0*Diagonal{Float64}(I, 2)) # Measurement noise covariance
+	W = Matrix(0.001*Diagonal{Float64}(I, 4)) # Process noise covariance	
+	V = Matrix(meascov*Diagonal{Float64}(I, 2)) # Measurement noise covariance
 
 	f(x, u, rng) = A*x + rand(rng, MvNormal(W))
 
@@ -112,7 +112,6 @@ function runexp(num_particles)
 
 	plots = []
 
-	num_iter = 100
 	rmse = zeros(num_iter,3) # Col 1 has vanilla, 2 has cem, 3 has kf
 	rmse_elites = zeros(num_iter,2)
 
@@ -222,20 +221,21 @@ end # End of the reel gif writing function
 # Third dimension of the `data` data structure denotes experiment number
 # Each exp returns a table with timeslices in rows and rmse_sir and rmse_cem
 # in columns. Each new table is stacked on top of table from previous experiment
-function run_many_exps(;num_exp,num_particles)	
-	display("Running $(num_exp) experiments with $(num_particles) particles")	
-	data = zeros(100,3,num_exp) # 100 rows (iterations), 3 columns (van,cem,kf)
+function run_many_exps(;num_exp,num_particles,meascov,num_iter)	
+	display("Running $(num_exp) experiments with $(num_particles) particles with $(num_iter) iterations and $(meascov) measurement covariance coeff")	
+	data = zeros(num_iter,3,num_exp) #3 columns (vanilla,cem,kf)
 	for i in 1:num_exp
 		if i%20 == 0.
 			@show i
 		end		
-		plt,data[:,:,i] = runexp(num_particles)
+		plt,data[:,:,i] = runexp(num_particles=num_particles,
+					num_iter=num_iter,meascov=meascov)
 	end
 
 	rmse_avg = mean(data,dims=3)[:,:,1] #Extract 100x3 array from 100x3x1 array
 
-	plot(rmse_avg,labels=["sir","cem","kf"])
-	savefig("../img/rmse_avg_numexps_$(num_exp)_numparticles_$(num_particles)_meascov_5.png")
+	plot(rmse_avg,labels=["sir","cem","kf"],xlabel="iteration",ylabel="rmse")
+	savefig("../img/$(num_exp)exps_$(num_particles)particles_$(meascov)meascov_$(num_iter)iterations.png")
 	return nothing
 end
 
@@ -245,15 +245,17 @@ runkf = false
 if run1exp
 	# Single experiment and make associated video	
 	display("Running a single experiment and making associated video")
-	num_particles = 1000	
-	plots, rmse = runexp(num_particles)
+	num_particles = 1000
+	num_iter = 50
+	meascov = 5	
+	plots, rmse = runexp(num_particles=num_particles,num_iter=num_iter,meascov=meascov)
 	@show length(plots) # Should be equal to the number of iterations of the particle filter
 	makegif = true
 	if makegif write_particles_gif(plots,"../img/$(num_particles)_particles_all3.mp4") end
 end
 if runmanyexp
 	# Mulitple experiments to make average rmse plot
-	run_many_exps(num_exp = 100, num_particles = 1000)
+	run_many_exps(num_exp = 100, num_particles = 50,num_iter=100,meascov=1)
 end
 if runkf
 	mu_0 = [1.,1.,1.,1.]
