@@ -81,7 +81,11 @@ function runexp(num_particles)
 	     0.0 0.0;
              0.0  0.0;
              0.0 0.0]
-	
+
+		# This will be needed for the Kalman filtering
+	C = [1.0 0.0 0.0 0.0; 
+	     0.0 1.0 0.0 0.0]
+
 	W = Matrix(0.001*Diagonal{Float64}(I, 4)) # Process noise covariance
 	V = Matrix(5.0*Diagonal{Float64}(I, 2)) # Measurement noise covariance
 
@@ -99,12 +103,17 @@ function runexp(num_particles)
 
 	b = ParticleCollection([4.0*rand(4).-2.0 for i in 1:N])
 
+		# Parameters setting up the Kalman filtering parameters
+	mu = [0.,0.,0.,0.]
+	sigma = Matrix(1.0*Diagonal{Float64}(I, 4))
+
+
 	x = [1.0, 1.0, 1.0, 1.0]
 
 	plots = []
 
 	num_iter = 100
-	rmse = zeros(num_iter,2)
+	rmse = zeros(num_iter,3) # Col 1 has vanilla, 2 has cem, 3 has kf
 	rmse_elites = zeros(num_iter,2)
 
 	for i in 1:num_iter    #RpB: was 100 before
@@ -118,13 +127,25 @@ function runexp(num_particles)
 		
 		b_cem = update(filter_cem,b,u,y)
 		#@show "cem update done"
-		plt = scatter([p[1] for p in particles(b)], [p[2] for p in particles(b)], color=:black, markersize=2.0, label="sir",markershape=:diamond)
-		scatter!(plt, [x[1]], [x[2]], color=:blue, xlim=(-5,15), ylim=(-5,15), 
+
+			# Kalman filter update
+		mu,sigma = kalman_filter(mu,sigma,u,y,A,B,C,W,V)
+
+			# Plot the vanilla particle spread
+		plt = scatter([p[1] for p in particles(b)], [p[2] for p in particles(b)], color=:cyan, markersize=2.0, label="sir",markershape=:diamond, xlim=(-5,15), ylim=(-5,15))
+			
+			# Plot the true position
+		scatter!(plt, [x[1]], [x[2]], color=:yellow, xlim=(-5,15), ylim=(-5,15), 
 			label = "true")
 	    
-		# RpB: Testing adding another group of particles
-		scatter!([p[1] for p in particles(b_cem)], [p[2] for p in particles(b_cem)], color=:red, markersize=2.0, label="cem",markershape=:cross)
+			# Plot the cem particle spread
+		scatter!([p[1] for p in particles(b_cem)], [p[2] for p in particles(b_cem)], color=:magenta, markersize=2.0, label="cem",markershape=:cross, xlim=(-5,15), ylim=(-5,15))
+
+			# Plot the kalman filter mean position
+		plt = scatter!([mu[1]], [mu[2]], color=:red, markersize=5.0, label="kf",markershape=:octagon,xlim=(-5,15), ylim=(-5,15))
+
 		push!(plots, plt)
+
 
 		# Plot the rmse value for the current iteration of particles
 		# Vanilla rmse
@@ -138,7 +159,9 @@ function runexp(num_particles)
 	    	rmse_cem_elites = calc_rmse_elites(b_cem,x)
 	    	rmse_elites[i,1] = rmse_sir_elites
 	    	rmse_elites[i,2] = rmse_cem_elites
-		
+
+		# Calculate the distance from kalman filter mean to ground truth
+		rmse[i,3] = norm(mu[1:2]-x[1:2])
 	end
 
 	#plot(rmse,labels=["sir","cem"])
@@ -147,6 +170,11 @@ function runexp(num_particles)
 	return plots,rmse
 	
 end # End of the runexp function
+
+# To calculate the distance between kalman filter mean and true position
+function calc_dist(mu::Array,x::Array)
+	return norm(mu-x[1:2])
+end
 
 # Uses the norm squared calculation function to find the rmse
 function calc_rmse(b::ParticleCollection,x)
@@ -196,33 +224,36 @@ end # End of the reel gif writing function
 # in columns. Each new table is stacked on top of table from previous experiment
 function run_many_exps(;num_exp,num_particles)	
 	display("Running $(num_exp) experiments with $(num_particles) particles")	
-	data = zeros(100,2,num_exp)
+	data = zeros(100,3,num_exp) # 100 rows (iterations), 3 columns (van,cem,kf)
 	for i in 1:num_exp
 		if i%20 == 0.
 			@show i
 		end		
 		plt,data[:,:,i] = runexp(num_particles)
 	end
-	rmse_avg = mean(data,dims=3)[:,:,1] #Extract 100x2 array from 100x2x1 array
-	plot(rmse_avg,labels=["sir","cem"])
-	savefig("rmse_avg_numexps_$(num_exp)_numparticles_$(num_particles)_highCov.png")
+
+	rmse_avg = mean(data,dims=3)[:,:,1] #Extract 100x3 array from 100x3x1 array
+
+	plot(rmse_avg,labels=["sir","cem","kf"])
+	savefig("../img/rmse_avg_numexps_$(num_exp)_numparticles_$(num_particles)_meascov_5.png")
 	return nothing
 end
 
 run1exp = false
-runmanyexp = false
-runkf = true
+runmanyexp = true
+runkf = false
 if run1exp
 	# Single experiment and make associated video	
 	display("Running a single experiment and making associated video")
-	plots, rmse = runexp(1000)
+	num_particles = 1000	
+	plots, rmse = runexp(num_particles)
 	@show length(plots) # Should be equal to the number of iterations of the particle filter
 	makegif = true
-	if makegif write_particles_gif(plots,"100particles_HighMeasCov.mp4") end
+	if makegif write_particles_gif(plots,"../img/$(num_particles)_particles_all3.mp4") end
 end
 if runmanyexp
 	# Mulitple experiments to make average rmse plot
-	run_many_exps(num_exp = 100, num_particles = 100)
+	run_many_exps(num_exp = 100, num_particles = 1000)
 end
 if runkf
 	mu_0 = [1.,1.,1.,1.]
