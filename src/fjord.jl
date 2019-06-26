@@ -27,9 +27,9 @@ particles = [80*rand(1)[1]-40 for i in 1:N]
 plt = plot_terrain_ac_particles(0,4,particles)
 savefig(plt,"test_terrain.png")
 """
-function plot_terrain_ac_particles(xpos,ypos,particles)
+function plot_terrain_ac(xpos,ypos)
 #@show "terrain plotter being called"
-	X = xpos[1] - 0.6 .+ [-1,     -0.1,   -0.09,    0.3,  0.7, 0.8, 0.7, 0.3, -0.09,  -0.1, -1];
+	X = xpos[1] - 0.6 .+ [-1,-0.1,-0.09,0.3,0.7,0.8,0.7, 0.3, -0.09,  -0.1, -1];
 	Y = ypos .+ [-0.05, -0.05, -0.4, -0.05, -0.05,0, 0.05, 0.05, 0.4, 0.05, 0.05];
 
 	# Here are the mountains
@@ -40,9 +40,9 @@ function plot_terrain_ac_particles(xpos,ypos,particles)
 	# Call the ground function on the x locations that are deemed as mountain above
 	Mountains = map.(ground,plotVectorMountains)
 
-	plt = plot(plotVectorMountains,Mountains,leg=false) # Plot the terrain
-	plot!(X,Y,leg=false) # Plot the aircraft
-	scatter!(particles,4*ones(length(particles)),leg=false)
+	plt = plot(plotVectorMountains,Mountains,label="Terrain") # Plot the terrain
+	plot!(X,Y,label="Aircraft") # Plot the aircraft
+	
 	return plt
 end
 
@@ -51,13 +51,12 @@ end
 Take input array of plots and convert to gif animation
 """
 function write_particles_gif(plots)
-@show "Making gif"
+	print("\n Making gif\n")
 	frames = Frames(MIME("image/png"), fps=5)
 	for plt in plots
-	    print(".")
 	    push!(frames, plt)
 	end
-	write("fjord.gif", frames)
+	write("../img/Fjord/26June/fjord.mp4", frames)
 	return nothing
 end # End of the reel gif writing function
 
@@ -68,7 +67,7 @@ function runexp()
 	dt = 0.1 # time step
 
 	ypos = 4 # Height of the aircraft stays constant
-	meas_stdev = 0.1
+	meas_stdev = 2
 	A = [1]
 	B = [0]
 	f(x, u, rng) = x #+ [1.0] # Investigating fixed state
@@ -77,37 +76,49 @@ function runexp()
 
 	model = ParticleFilterModel{Vector{Float64}}(f, g)
 
-	N = 1000  # Rpb: Was 1000 before
+	N = 50  # Rpb: Was 1000 before
 
 	filter_sir = SIRParticleFilter(model, N) # This was originally present
 	filter_cem = CEMParticleFilter(model, N) # This is the cem filter
 
-	b = ParticleCollection([[80.0*rand(1)[1]-40.0] for i in 1:N])
+	b_sir = ParticleCollection([[80.0*rand(1)[1]-40.0] for i in 1:N])
+	b_cem = b_sir
 
 	x = [-25.0]
 
 	plots = []
-plt = plot_terrain_ac_particles(x,ypos,particles(b))
-push!(plots,plt)
-	for i in 1:50    #RpB: was 100 before
-	    print(".")
-	    u = 1
-	    x = f(x, u, rng)
-#@show x
-	    y = h(x, rng)
-#@show y
-	    b = update(filter_cem, b, u, y)
+	
+	plt = plot_terrain_ac(x,ypos)
+	scatter!([p[1] for p in particles(b_sir)],[ypos for p in particles(b_sir)],label="SIR",xlim=(-30,30),color=:blue)
 
-#@show particles(b)
+	scatter!([p[1] for p in particles(b_cem)],[ypos for p in particles(b_cem)],label="CEM",xlim=(-30,30),color=:green)
+
+#	scatter!(particles(b_sir),4*ones(length(particles(b_sir))),label="SIR",xlim=(-30,30),color=:blue)
+# 	scatter!(particles(b_cem),4*ones(length(particles(b_cem))),label="CEM",xlim=(-30,30),color=:green)
+	push!(plots,plt)
+	for i in 1:50    #RpB: was 100 before
+		#print(".")
+		u = 1
+		x = f(x, u, rng)
+		y = h(x, rng)
+		b_sir = update(filter_sir, b_sir, u, y)
+
 		# RpB: This is the update_cem
-		#b_cem = update(filter_cem,b,u,y)
-#@show particles(b_cem)
-	    plt = plot_terrain_ac_particles(x,ypos,particles(b))
-	    push!(plots, plt)
+		b_cem = update(filter_cem,b_cem,u,y)
+
+		plt = plot_terrain_ac(x,ypos)
+
+	scatter!([p[1] for p in particles(b_sir)],[ypos for p in particles(b_sir)],label="SIR",xlim=(-30,30),color=:blue)
+
+	scatter!([p[1] for p in particles(b_cem)],[ypos for p in particles(b_cem)],label="CEM",xlim=(-30,30),color=:green)
+
+#		scatter!(particles(b_sir),4*ones(length(particles(b_sir))),label="SIR",xlim=(-30,30),color=:blue)
+#		scatter!(particles(b_cem),4*ones(length(particles(b_cem))),label="CEM",xlim=(-30,30),color=:green)
+	
+		push!(plots, plt)
 	end
 	return plots
 end # End of the runexp function
-
 
 
 @show "Sandbox says: Calling runexp"
