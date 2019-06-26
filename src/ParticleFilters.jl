@@ -33,8 +33,8 @@ export
     PredictModel,
     ReweightModel,
     CEMParticleFilter, # Rpb Added as a new file cem_filter.jl
-    CEMResampler # RpB Added to resamplers.jl
-
+    CEMResampler, # RpB Added to resamplers.jl
+    print_particles # Added to resamplers.jl
 export
     resample,
     predict,

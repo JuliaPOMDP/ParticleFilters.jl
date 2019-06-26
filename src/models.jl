@@ -15,6 +15,7 @@ function predict!(pm, m::PredictModel, b, u, rng)
     for i in 1:n_particles(b)
         x1 = particle(b, i)
         pm[i] = m.f(x1, u, rng)
+	#print("\n propagated particle $(i)= $(pm[i])\n")
     end
 end
 

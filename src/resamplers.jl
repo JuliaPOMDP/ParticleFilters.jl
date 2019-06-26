@@ -100,12 +100,20 @@ function slicematrix(A::AbstractMatrix)
     return [A[i, :] for i in 1:size(A,1)]
 end
 
-#XXX Need to un-harcoded the numtop that is fixed now
 function resample(re::CEMResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
 #@show "cem resampple triggered alright"
+	#print("\nStart of resampling\n")
+	#print_particles(ParticleCollection(particles(b)))	
 	sortedidx = sortperm(b.weights,rev=true)
+	#@show sortedidx
 	numtop = Int(0.2*re.n) # Top 20% of the number of particles to be selected as elite
 	best_particles = b.particles[sortedidx[1:numtop]]
+		#XXX: Printing things
+		#print("After selecting the best particles \n")
+		#@show length(best_particles)
+
+		#print_particles(ParticleCollection(best_particles))	
+	
 	temp = hcat(best_particles...)'
 	best_particles = temp'
 
@@ -113,9 +121,22 @@ function resample(re::CEMResampler, b::AbstractParticleBelief{S}, rng::AbstractR
 		p_distb = fit(MvNormal,best_particles)
 		new_p_mat = rand(p_distb,re.n)
 		new_p_array = slicematrix(new_p_mat')
+			#XXX Printing things
+			#print("\nFitted distb: $(p_distb)\n")
+			#@show p_distb			
+			#print("\n after sampling from fitted distribution\n")
+			#print_particles(ParticleCollection(new_p_array))
 		return ParticleCollection(new_p_array)
 	catch
-		display("posdef exception was thrown")		
+		print("\n posdef exception was thrown\n")		
 		return ParticleCollection(b.particles)
 	end
+end
+
+#XXX: Move this particle printing function to a more apt file as comapred to resample.jl
+function print_particles(b::ParticleCollection)
+	for p in particles(b)
+		print("\n$(p)")
+	end
+	return nothing
 end
