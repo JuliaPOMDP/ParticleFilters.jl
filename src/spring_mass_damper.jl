@@ -1,5 +1,5 @@
 # Damped spring mass oscillator as another case study
-
+# http://rtg.math.ncsu.edu/wp-content/uploads/sites/3/2016/07/Kalman-Filter-Practical.pdf
 # Idea: Plot true position, Kalman filter posterior mean, particle distribution, cem distribution
 
 using ParticleFilters
@@ -11,16 +11,28 @@ using Plots
 using Reel
 using Statistics
 
+"""
+State: x pos and x vel
+Control input: Nothing
+Process noise: None
+Measurement noise: Noisy observation of x position
+"""
 function run_exp()
 	rng = Random.GLOBAL_RNG
 	dt = 0.1
 	m = 10.
 	k = 5.
 	b = 3.
-	A = [  0    1;
+	A = [  0    1;	# From the equations of motion
 	    -k/m -b/m]
 
+	B = [0. 0.;
+	     0. 0.]
+
+	meas_noise = 2.0 # Measurment noise variance
 	f(x,u,rng) = (Matrix(1.0*Diagonal(I,2)) + dt*A)*x
+	h(x, rng) = rand(rng, Normal(x[1], meas_noise)) #Generates an observation
+	g(x0, u, x, y) = pdf(Normal(x[1], meas_noise), y) #Creates likelihood
 
 	# Initial state
 	x = [1.0, 0.0]
@@ -37,12 +49,13 @@ function run_exp()
 
 		# Set up for particle filter and cem filter
 	model = ParticleFilterModel{Vector{Float64}}(f, g)
-	N = 100 # Number of particles
+	N = 50 # Number of particles (10 causes posDef exception to throw up)
 
 	filter_sir = SIRParticleFilter(model, N) # Vanilla particle filter
 	filter_cem = CEMParticleFilter(model, N) # CEM filter
 
-	b = ParticleCollection([1.0*rand(2) for i in 1:N]) # Each particle is 2 element array
+	b_sir = ParticleCollection([rand(2) for i in 1:N]) # Each particle is 2 element array
+	b_cem = b_sir
 
 		# Run iterations
 	for i in 1:100
@@ -51,20 +64,18 @@ function run_exp()
 		y = h(x, rng)	# Generate a noisy observation of the state
 		
 			# Kalman filtering estimate
-		mu,sigma = kalman_filter(mu,sigma,u,y,A,B,C,W,V)
+		#mu,sigma = kalman_filter(mu,sigma,u,y,A,B,C,W,V)
 
 			# Particle filtering estimate
-		b = update(filter_sir, b, u, y)
+		b_sir = update(filter_sir, b_sir, u, y)
 			
 			# Cross entropy filtering estimate
-		b_cem = update(filter_cem,b,u,y)
+		b_cem = update(filter_cem,b_cem,u,y)
 
-		plt = scatter([x[1]],[2.0],color=:black,label="true",xlim=(-5,5), ylim=(-5,5))
-		scatter!([mu[1]],[2.0],color=:blue,label="kf",xlim=(-5,5), ylim=(-5,5))
-		scatter!([p[1] for p in particles(b)],[2.0],color=:cyan,
-			label="sir",xlim=(-5,5), ylim=(-5,5))
-		scatter!([p[1] for p in particles(b_cem)],[2.0],color=:magenta,
-			label="cem",xlim=(-5,5), ylim=(-5,5))
+		plt = scatter([x[1]],[2.0],color=:black,label="true",xlim=(-5,5), ylim=(-5,5),markersize = 5.0,markershape=:octagon)
+		#scatter!([mu[1]],[2.0],color=:blue,label="kf",xlim=(-5,5), ylim=(-5,5))
+		scatter!([p[1] for p in particles(b_sir)],[1.5 for p in particles(b_sir)],color=:cyan,label="sir",xlim=(-5,5), ylim=(-5,5))
+		scatter!([p[1] for p in particles(b_cem)],[2.5 for p in particles(b_cem)],color=:magenta,markershape = :star,label="cem",xlim=(-5,5), ylim=(-5,5))
 		
 		push!(positions,x[1])
 		push!(plots,plt)
@@ -76,7 +87,7 @@ end
 gif making function
 """
 function make_gif(plots,filename)
-display("Making gif")
+	print("\n video name = $(filename)\n")
 	frames = Frames(MIME("image/png"), fps=5)
 	for plt in plots
 	    push!(frames, plt)
@@ -110,6 +121,6 @@ end
 display("Running the spring mass damper system")
 positions,plots = run_exp()
 plot(positions)
-savefig("springmassdamper_RestStart.png")
+savefig("../img/SpringMassDamper/26June/springmassdamper.png")
 gifit = true
-if gifit make_gif(plots,"springmassdamper_RestStart.mp4") end
+if gifit make_gif(plots,"../img/SpringMassDamper/26June/springmassdamper.mp4") end
