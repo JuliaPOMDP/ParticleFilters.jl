@@ -155,7 +155,9 @@ function runexp(;num_particles,num_iter,meascov)
 	filter_sir = SIRParticleFilter(model, N) # Vanilla particle filter
 	filter_cem = CEMParticleFilter(model, N) # CEM filter
 
-	b = ParticleCollection([4.0*rand(4).-2.0 for i in 1:N])
+		# XXX Initial sampling distribution
+	init_dist = Normal(0,5)
+	b = ParticleCollection([4.0*rand(init_dist,4).-2.0 for i in 1:N])
 	b_cem = b
 	
 		# XXX: Printing particles
@@ -254,19 +256,19 @@ function run_many_exps(;num_exp,num_particles,meascov,num_iter)
 	return nothing
 end
 
-run1exp = false
-runmanyexp = true
+run1exp = true
+runmanyexp = false
 runkf = false
 if run1exp
 	# Single experiment and make associated video	
 	display("Running a single experiment and making associated video")
-	num_particles = 1000
+	num_particles = 500
 	num_iter = 100
 	meascov = 5	
 	plots, rmse = runexp(num_particles=num_particles,num_iter=num_iter,meascov=meascov)
 	@show length(plots) # Should be equal to the number of iterations of the particle filter
 	makegif = true
-	if makegif write_particles_gif(plots,"../img/25June_$(num_particles)particles_$(num_iter)iterations_$(meascov)meascov.mp4") end
+	if makegif write_particles_gif(plots,"../img/26June_$(num_particles)particles_$(num_iter)iterations_$(meascov)meascov.mp4") end
 end
 if runmanyexp
 	# Mulitple experiments to make average rmse plot

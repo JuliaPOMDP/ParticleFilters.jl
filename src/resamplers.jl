@@ -122,8 +122,7 @@ function resample(re::CEMResampler, b::AbstractParticleBelief{S}, rng::AbstractR
 		new_p_mat = rand(p_distb,re.n)
 		new_p_array = slicematrix(new_p_mat')
 			#XXX Printing things
-			#print("\nFitted distb: $(p_distb)\n")
-			#@show p_distb			
+			#print("\nFitted distb: $(p_distb)\n")		
 			#print("\n after sampling from fitted distribution\n")
 			#print_particles(ParticleCollection(new_p_array))
 		return ParticleCollection(new_p_array)

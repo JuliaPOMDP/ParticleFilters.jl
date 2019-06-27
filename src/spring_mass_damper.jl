@@ -29,7 +29,7 @@ function run_exp()
 	B = [0. 0.;
 	     0. 0.]
 
-	meas_noise = 2.0 # Measurment noise variance
+	meas_noise = 5.0 # Measurment noise variance
 	f(x,u,rng) = (Matrix(1.0*Diagonal(I,2)) + dt*A)*x
 	h(x, rng) = rand(rng, Normal(x[1], meas_noise)) #Generates an observation
 	g(x0, u, x, y) = pdf(Normal(x[1], meas_noise), y) #Creates likelihood
@@ -49,12 +49,17 @@ function run_exp()
 
 		# Set up for particle filter and cem filter
 	model = ParticleFilterModel{Vector{Float64}}(f, g)
-	N = 50 # Number of particles (10 causes posDef exception to throw up)
+	N = 200 # Number of particles (10 causes posDef exception to throw up)
 
 	filter_sir = SIRParticleFilter(model, N) # Vanilla particle filter
 	filter_cem = CEMParticleFilter(model, N) # CEM filter
 
-	b_sir = ParticleCollection([rand(2) for i in 1:N]) # Each particle is 2 element array
+
+		# XXX Create initial particle set
+		# Looked like the inbuilt rand only sampled from a Gaussian with spread 1
+		# We need to start with more particle diversity
+	init_dist = Normal(0,5)
+	b_sir = ParticleCollection([rand(init_dist,2) for i in 1:N]) # Each particle is 2 element array
 	b_cem = b_sir
 
 		# Run iterations
@@ -88,7 +93,7 @@ gif making function
 """
 function make_gif(plots,filename)
 	print("\n video name = $(filename)\n")
-	frames = Frames(MIME("image/png"), fps=5)
+	frames = Frames(MIME("image/png"), fps=10)
 	for plt in plots
 	    push!(frames, plt)
 	end
