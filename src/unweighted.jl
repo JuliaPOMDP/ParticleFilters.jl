@@ -14,11 +14,11 @@ function UnweightedParticleFilter(model, n::Integer; rng=Base.GLOBAL_RNG)
 end
 
 function update(up::UnweightedParticleFilter, b::ParticleCollection, a, o)
-    new = sampletype(b)[]
+    new = Random.gentype(b)[]
     i = 1
     while i <= up.n
         s = particle(b, mod1(i, n_particles(b)))
-        sp, o_gen = generate_so(up.model, s, a, up.rng)
+        sp, o_gen = gen(DDNOut(:sp, :o), up.model, s, a, up.rng)
         if o_gen == o
             push!(new, sp)
         end

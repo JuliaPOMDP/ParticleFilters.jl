@@ -9,7 +9,7 @@ the corresponding particle
     unnormalized_util(p::AlphaVectorPolicy, b::AbstractParticleBelief)
 """
 function unnormalized_util(p::AlphaVectorPolicy, b::AbstractParticleBelief)
-    util = zeros(n_actions(p.pomdp))
+    util = p.pomdp |> actions |> length |> zeros
     for (i, s) in enumerate(particles(b))
         j = stateindex(p.pomdp, s)
         util += weight(b, i)*getindex.(p.alphas, (j,))
