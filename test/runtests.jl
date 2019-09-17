@@ -58,7 +58,7 @@ struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
         rb2 = @inferred resample(rs, WeightedParticleBelief(particles(b), ones(n_particles(b))), MersenneTwister(3))
         @test all(particles(rb1).==particles(rb2))
     end
-    
+
     @testset "unweighted" begin
         rng = MersenneTwister(47)
         uf = UnweightedParticleFilter(p, 1000, rng)

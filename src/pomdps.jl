@@ -68,7 +68,7 @@ function initialize_belief(up::BasicParticleFilter, d::D) where D
         if ex isa MethodError
             @warn("""
                 Suppressing MethodError in initialize_belief in ParticleFilters.jl. Please file an issue here:
-                
+
                 https://github.com/JuliaPOMDP/ParticleFilters.jl/issues/new
 
                 The error was
