@@ -157,7 +157,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Beliefs",
     "title": "Standard POMDPs.jl Distribution Interface",
     "category": "section",
-    "text": "The following functions from the POMDPs.jl distributions interface provide basic ways of interacting with particle beliefs as distributions (click on each for documentation):rand\npdf\nsupport\nsampletype (will be replaced with Random.gentype)\nmode\nmean"
+    "text": "The following functions from the POMDPs.jl distributions interface provide basic ways of interacting with particle beliefs as distributions (click on each for documentation):rand\npdf\nsupport\nmode\nmean"
 },
 
 {
@@ -190,14 +190,6 @@ var documenterSearchIndex = {"docs": [
     "title": "Distributions.support",
     "category": "function",
     "text": "support(d::Any)\n\nReturn an iterable object containing the possible values that can be sampled from distribution d. Values with zero probability may be skipped.\n\n\n\n\n\n"
-},
-
-{
-    "location": "beliefs/#POMDPs.sampletype",
-    "page": "Beliefs",
-    "title": "POMDPs.sampletype",
-    "category": "function",
-    "text": "sampletype(T::Type)\nsampletype(d::Any) = sampletype(typeof(d))\n\nReturn the type of objects that are sampled from a distribution or space d when rand(rng, d) is called.\n\nThe distribution writer should implement the sampletype(::Type) method for the distribution type, then the function can be called for that type or for objects of that type (i.e. the sampletype(d::Any) = sampletype(typeof(d)) default is provided).\n\n\n\n\n\n"
 },
 
 {
@@ -285,7 +277,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Beliefs",
     "title": "Interface Docstrings",
     "category": "section",
-    "text": "POMDPs.rand\nPOMDPs.pdf\nPOMDPs.support\nPOMDPs.sampletype\nPOMDPs.mode\nPOMDPs.mean\nn_particles\nparticles\nweights\nweighted_particles\nweight_sum\nweight\nparticle\nParticleFilters.probdict"
+    "text": "POMDPs.rand\nPOMDPs.pdf\nPOMDPs.support\nPOMDPs.mode\nPOMDPs.mean\nn_particles\nparticles\nweights\nweighted_particles\nweight_sum\nweight\nparticle\nParticleFilters.probdict"
 },
 
 {
