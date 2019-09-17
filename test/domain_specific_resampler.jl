@@ -36,5 +36,5 @@ for bp in stepthrough(m, p2, up, "bp", max_steps=3)
     @test bp isa ParticleCollection{LightDark1DState}
     @test n_particles(bp) == n
 end
-    
+
 end

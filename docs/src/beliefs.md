@@ -20,7 +20,6 @@ The following functions from the [POMDPs.jl distributions interface](http://juli
 - [`rand`](@ref)
 - [`pdf`](@ref)
 - [`support`](@ref)
-- [`sampletype`](@ref) (will be replaced with `Random.gentype`)
 - [`mode`](@ref)
 - [`mean`](@ref)
 
@@ -43,7 +42,6 @@ These functions provide access to the particles and weights in the beliefs (clic
 POMDPs.rand
 POMDPs.pdf
 POMDPs.support
-POMDPs.sampletype
 POMDPs.mode
 POMDPs.mean
 n_particles

@@ -18,7 +18,7 @@ function predict!(pm, m::POMDP, b, a, rng)
         s = particle(b, i)
         if !isterminal(m, s)
             all_terminal = false
-            sp = generate_s(m, s, a, rng)
+            sp = gen(DDNOut(:sp), m, s, a, rng)
             pm[i] = sp
         end
     end
@@ -68,7 +68,7 @@ function initialize_belief(up::BasicParticleFilter, d::D) where D
         if ex isa MethodError
             @warn("""
                 Suppressing MethodError in initialize_belief in ParticleFilters.jl. Please file an issue here:
-                
+
                 https://github.com/JuliaPOMDP/ParticleFilters.jl/issues/new
 
                 The error was

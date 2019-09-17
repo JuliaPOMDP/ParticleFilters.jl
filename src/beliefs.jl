@@ -1,6 +1,5 @@
 abstract type AbstractParticleBelief{T} end
 
-sampletype(::Type{B}) where B<:AbstractParticleBelief{T} where T = T
 Random.gentype(::Type{B}) where B<:AbstractParticleBelief{T} where T = T
 
 ########################

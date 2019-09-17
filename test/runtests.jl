@@ -58,13 +58,13 @@ struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
         rb2 = @inferred resample(rs, WeightedParticleBelief(particles(b), ones(n_particles(b))), MersenneTwister(3))
         @test all(particles(rb1).==particles(rb2))
     end
-    
+
     @testset "unweighted" begin
         rng = MersenneTwister(47)
         uf = UnweightedParticleFilter(p, 1000, rng)
         ps = @inferred initialize_belief(uf, initialstate_distribution(p))
         a = @inferred rand(rng, actions(p))
-        sp, o = @inferred generate_so(p, rand(rng, ps), a, rng)
+        sp, o = @inferred gen(DDNOut(:sp, :o), p, rand(rng, ps), a, rng)
         bp = @inferred update(uf, ps, a, o)
 
         wp1 = @inferred collect(weighted_particles(ParticleCollection([1,2])))
