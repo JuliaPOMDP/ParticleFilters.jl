@@ -173,7 +173,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Beliefs",
     "title": "Base.rand",
     "category": "function",
-    "text": "rand{T}(rng::AbstractRNG, d::Any)\n\nReturn a random element from distribution or space d.\n\nIf d is a state or transition distribution, the sample will be a state; if d is an action distribution, the sample will be an action or if d is an observation distribution, the sample will be an observation.\n\n\n\n\n\n"
+    "text": "rand(rng::AbstractRNG, d::Any)\n\nReturn a random element from distribution or space d.\n\nIf d is a state or transition distribution, the sample will be a state; if d is an action distribution, the sample will be an action or if d is an observation distribution, the sample will be an observation.\n\n\n\n\n\n"
 },
 
 {
@@ -189,7 +189,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Beliefs",
     "title": "Distributions.support",
     "category": "function",
-    "text": "support(d::Any)\n\nReturn the possible values that can be sampled from distribution d. Values with zero probability may be skipped.\n\n\n\n\n\n"
+    "text": "support(d::Any)\n\nReturn an iterable object containing the possible values that can be sampled from distribution d. Values with zero probability may be skipped.\n\n\n\n\n\n"
 },
 
 {
