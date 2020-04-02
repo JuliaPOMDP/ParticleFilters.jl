@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Handling Particle Depletion · ParticleFilters.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>ParticleFilters.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../basic/">Basic Particle Filter</a></li><li><a class="toctext" href="../beliefs/">Beliefs</a></li><li class="current"><a class="toctext" href>Handling Particle Depletion</a><ul class="internal"></ul></li><li><a class="toctext" href="../">Home</a></li><li><a class="toctext" href="../models/">Models</a></li><li><a class="toctext" href="../resamplers/">Resamplers</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Handling Particle Depletion</a></li></ul><a class="edit-page" href="https://github.com/JuliaPOMDP/ParticleFilters.jl/blob/master/docs/src/depletion.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Handling Particle Depletion</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Handling-Particle-Depletion-1" href="#Handling-Particle-Depletion-1">Handling Particle Depletion</a></h1><p>Many of the most common problems with particle filters are related to particle depletion, that is, a lack of particles corresponding to the true state. In many cases, it is not difficult to overcome these problems, but domain-specific heuristics are often more effective than generic approaches.</p><p>The recommended first remedy for particle depletion is to write a custom domain-specific <a href="../resamplers/#Resamplers-1">resampler</a> that injects new appropriate particles in the case of particle depletion. The particle depletion can be detected by observing low likelihood weights and handling it within the <a href="../basic/#ParticleFilters.resample"><code>resample</code></a> function.</p><p>The example below contains a more robust resampler for <a href="https://github.com/JuliaPOMDP/POMDPs.jl">POMDP</a> models. When it detects a complete particle depletion with <a href="../beliefs/#ParticleFilters.weight_sum"><code>weight_sum</code></a><code>(bp) == 0.0</code>, it replaces the particles by sampling from the initial state distribution.</p><pre><code class="language-julia">using POMDPs
+using ParticleFilters
+
+struct POMDPResampler
+    n::Int
+end
+
+function ParticleFilters.resample(r::POMDPResampler,
+                                  bp::WeightedParticleBelief,
+                                  pm::POMDP,
+                                  rm::POMDP,
+                                  b,
+                                  a,
+                                  o,
+                                  rng)
+
+    if weight_sum(bp) == 0.0
+        # no appropriate particles - resample from the initial distribution
+        new_ps = [initialstate(pm, rng) for i in 1:r.n]
+        return ParticleCollection(new_ps)
+    else
+        # normal resample
+        return resample(LowVarianceResampler(r.n), bp, rng)
+    end
+end</code></pre><p>If it is not possible to handle particle depletions only within <a href="../basic/#ParticleFilters.resample"><code>resample</code></a>, then it may be possible to handle with a custom prediction or reweighting model, or it may be best to write a new filter using the building blocks in this package. A good way to get started on this is to look at the implementation of the <a href="../basic/#POMDPs.update"><code>update</code></a> function of the <a href="../basic/#ParticleFilters.BasicParticleFilter"><code>BasicParticleFilter</code></a></p><footer><hr/><a class="previous" href="../beliefs/"><span class="direction">Previous</span><span class="title">Beliefs</span></a><a class="next" href="../"><span class="direction">Next</span><span class="title">Home</span></a></footer></article></body></html>
