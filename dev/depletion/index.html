@@ -17,7 +17,7 @@ function ParticleFilters.resample(r::POMDPResampler,
 
     if weight_sum(bp) == 0.0
         # no appropriate particles - resample from the initial distribution
-        new_ps = [initialstate(pm, rng) for i in 1:r.n]
+        new_ps = [rand(rng, initialstate(pm)) for i in 1:r.n]
         return ParticleCollection(new_ps)
     else
         # normal resample
