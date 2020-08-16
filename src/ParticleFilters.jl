@@ -4,7 +4,8 @@ using POMDPs
 import POMDPs: pdf, mode, update, initialize_belief, support
 import POMDPs: statetype, isterminal, observation
 import POMDPs: action, value
-import POMDPs: implemented
+
+using POMDPLinter: @implemented
 
 import POMDPModelTools: obs_weight
 using StatsBase
