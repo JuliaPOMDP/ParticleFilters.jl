@@ -2,4 +2,5 @@
 *.jl.cov
 *.jl.mem
 Manifest.toml
+notebooks/.ipynb_checkpoints/
 test/*.gif
