@@ -11,22 +11,12 @@ using Distributions
 using NBInclude
 
 struct P <: POMDP{Nothing, Nothing, Nothing} end
-@testset "!implemented" begin
-    @test_broken !@implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing)
-    @test !@implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing)
-    @test !@implemented obs_weight(::P, ::Nothing, ::Nothing)
-end
-ParticleFilters.obs_weight(::P, ::Nothing, ::Nothing, ::Nothing) = 1.0
+ParticleFilters.obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing) = 1.0
 
 @testset "implemented" begin
-    @test @implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing)
     @test @implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing)
-    @test !@implemented obs_weight(::P, ::Nothing, ::Nothing)
-    @test_broken obs_weight(P(), nothing, nothing, nothing, nothing) == 1.0
+    @test obs_weight(P(), nothing, nothing, nothing, nothing) == 1.0
 end
-
-POMDPs.observation(::P, ::Nothing) = nothing
-@test_broken @implemented obs_weight(::P, ::Nothing, ::Nothing)
 
 include("example.jl")
 include("domain_specific_resampler.jl")
