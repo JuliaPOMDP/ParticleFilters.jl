@@ -18,7 +18,7 @@ function update(up::UnweightedParticleFilter, b::ParticleCollection, a, o)
     i = 1
     while i <= up.n
         s = particle(b, mod1(i, n_particles(b)))
-        sp, o_gen = gen(DDNOut(:sp, :o), up.model, s, a, up.rng)
+        sp, o_gen = @gen(:sp, :o)(up.model, s, a, up.rng)
         if o_gen == o
             push!(new, sp)
         end

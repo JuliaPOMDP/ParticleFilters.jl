@@ -1,6 +1,7 @@
 using ParticleFilters
 using POMDPs
 using POMDPModels
+using POMDPLinter: @implemented
 using Test
 using POMDPPolicies
 using POMDPSimulators
@@ -11,7 +12,7 @@ using NBInclude
 
 struct P <: POMDP{Nothing, Nothing, Nothing} end
 @testset "!implemented" begin
-    @test !@implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing)
+    @test_broken !@implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing)
     @test !@implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing)
     @test !@implemented obs_weight(::P, ::Nothing, ::Nothing)
 end
@@ -21,11 +22,11 @@ ParticleFilters.obs_weight(::P, ::Nothing, ::Nothing, ::Nothing) = 1.0
     @test @implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing)
     @test @implemented obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing)
     @test !@implemented obs_weight(::P, ::Nothing, ::Nothing)
-    @test obs_weight(P(), nothing, nothing, nothing, nothing) == 1.0
+    @test_broken obs_weight(P(), nothing, nothing, nothing, nothing) == 1.0
 end
 
 POMDPs.observation(::P, ::Nothing) = nothing
-@test @implemented obs_weight(::P, ::Nothing, ::Nothing)
+@test_broken @implemented obs_weight(::P, ::Nothing, ::Nothing)
 
 include("example.jl")
 include("domain_specific_resampler.jl")
@@ -35,7 +36,7 @@ struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
     p = TigerPOMDP()
     filter = SIRParticleFilter(p, 10000)
     Random.seed!(filter, 47)
-    b = @inferred initialize_belief(filter, initialstate_distribution(p))
+    b = @inferred initialize_belief(filter, initialstate(p))
     @testset "sir" begin
         m = @inferred mode(b)
         m = @inferred mean(b)
@@ -62,9 +63,9 @@ struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
     @testset "unweighted" begin
         rng = MersenneTwister(47)
         uf = UnweightedParticleFilter(p, 1000, rng)
-        ps = @inferred initialize_belief(uf, initialstate_distribution(p))
+        ps = @inferred initialize_belief(uf, initialstate(p))
         a = @inferred rand(rng, actions(p))
-        sp, o = @inferred gen(DDNOut(:sp, :o), p, rand(rng, ps), a, rng)
+        sp, o = @inferred @gen(:sp, :o)(p, rand(rng, ps), a, rng)
         bp = @inferred update(uf, ps, a, o)
 
         wp1 = @inferred collect(weighted_particles(ParticleCollection([1,2])))

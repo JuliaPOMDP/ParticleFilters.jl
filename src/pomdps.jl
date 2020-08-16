@@ -18,7 +18,7 @@ function predict!(pm, m::POMDP, b, a, rng)
         s = particle(b, i)
         if !isterminal(m, s)
             all_terminal = false
-            sp = gen(DDNOut(:sp), m, s, a, rng)
+            sp = @gen(:sp)(m, s, a, rng)
             pm[i] = sp
         end
     end
