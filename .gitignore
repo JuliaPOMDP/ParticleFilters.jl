@@ -2,5 +2,6 @@
 *.jl.cov
 *.jl.mem
 Manifest.toml
+docs/build/
 notebooks/.ipynb_checkpoints/
 test/*.gif
