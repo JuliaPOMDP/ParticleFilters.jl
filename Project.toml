@@ -1,7 +1,7 @@
 name = "ParticleFilters"
 uuid = "c8b314e2-9260-5cf8-ae76-3be7461ca6d0"
 repo = "https://github.com/JuliaPOMDP/ParticleFilters.jl"
-version = "0.5.0"
+version = "0.5.1"
 
 [deps]
 POMDPLinter = "f3bd98c0-eb40-45e2-9eb1-f2763262d755"
