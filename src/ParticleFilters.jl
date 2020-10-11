@@ -24,7 +24,6 @@ export
     BasicParticleFilter,
     ImportanceResampler,
     LowVarianceResampler,
-    SIRParticleFilter,
     UnweightedParticleFilter,
     ParticleFilterModel,
     PredictModel,
@@ -57,16 +56,16 @@ export
     support,
     initialize_belief
 
+# deprecated
 export
-    SimpleParticleFilter
-
+    SIRParticleFilter
 
 include("beliefs.jl")
 include("basic.jl")
 include("resamplers.jl")
-include("sir.jl")
 include("unweighted.jl")
 include("models.jl")
+include("bootstrap.jl")
 include("pomdps.jl")
 include("policies.jl")
 include("runfilter.jl")

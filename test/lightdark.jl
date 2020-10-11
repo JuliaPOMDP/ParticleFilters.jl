@@ -7,7 +7,7 @@ pomdp = LightDark2D(init_dist=SymmetricNormal2([2.0, 2.0], 5.0))
 
 policy = FunctionPolicy(s->-0.1*mean(s))
 
-fnew = SIRParticleFilter(pomdp, 100, rng=MersenneTwister(42))
+fnew = BootstrapFilter(pomdp, 100, rng=MersenneTwister(42))
 ro = RolloutSimulator(rng=MersenneTwister(1), max_steps=10)
 simulate(ro, pomdp, policy, fnew)
 

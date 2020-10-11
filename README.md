@@ -26,7 +26,7 @@ dynamics(x, u, rng) = x + u + randn(rng)
 y_likelihood(x_previous, u, x, y) = pdf(Normal(), y - x)
 
 model = ParticleFilterModel{Float64}(dynamics, y_likelihood)
-pf = SIRParticleFilter(model, 10)
+pf = BootstrapFilter(model, 10)
 ```
 Then the `update` function can be used to perform a particle filter update.
 ```julia

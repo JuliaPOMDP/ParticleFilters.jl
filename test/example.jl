@@ -29,7 +29,7 @@ h(x, rng) = rand(rng, MvNormal(x[1:2], V))
 
 @testset "example" begin
     N = 1000
-    filter = SIRParticleFilter(model, N)
+    filter = BootstrapFilter(model, N)
     Random.seed!(1)
     rng = Random.GLOBAL_RNG
     b = ParticleCollection([4.0*rand(4).-2.0 for i in 1:N])

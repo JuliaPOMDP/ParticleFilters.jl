@@ -8,7 +8,7 @@ Additionally, an important requirement for a particle filter is efficient resamp
 
 Dynamics and measurement models for the filters can be specified as a [`ParticleFilterModel`](@ref) or a [`POMDP`](https://github.com/JuliaPOMDP/POMDPs.jl) or a custom user-defined type.
 
-The simplest sequential-importance-resampling Particle filter can be constructed with [`SIRParticleFilter`](@ref). [`BasicParticleFilter`](@ref) provides a more flexible structure.
+The simplest Bootstrap Particle filter can be constructed with [`BootstrapFilter`](@ref). [`BasicParticleFilter`](@ref) provides a more flexible structure.
 
 Basic setup of a model is as follows:
 ```julia
@@ -17,7 +17,7 @@ using ParticleFilters, Distributions
 dynamics(x, u, rng) = x + u + randn(rng)
 y_likelihood(x_previous, u, x, y) = pdf(Normal(), y - x)
 model = ParticleFilterModel{Float64}(dynamics, y_likelihood)
-pf = SIRParticleFilter(model, 10)
+pf = BootstrapFilter(model, 10)
 ```
 Then the [`update`](@ref) function can be used to perform a particle filter update.
 ```julia
