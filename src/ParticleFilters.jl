@@ -27,6 +27,7 @@ export
     UnweightedParticleFilter,
     ParticleFilterModel,
     PredictModel,
+    BootstrapFilter,
     ReweightModel
 
 export
