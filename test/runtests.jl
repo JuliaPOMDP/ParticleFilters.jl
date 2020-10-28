@@ -24,7 +24,7 @@ include("domain_specific_resampler.jl")
 struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
 @testset "infer" begin
     p = TigerPOMDP()
-    filter = SIRParticleFilter(p, 10000)
+    filter = BootstrapFilter(p, 10000)
     Random.seed!(filter, 47)
     b = @inferred initialize_belief(filter, initialstate(p))
     @testset "sir" begin
@@ -64,7 +64,7 @@ struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
     end
 
     @testset "normal" begin
-        pf = SIRParticleFilter(ContinuousPOMDP(), 100)
+        pf = BootstrapFilter(ContinuousPOMDP(), 100)
         ps = @inferred initialize_belief(pf, Normal())
     end
 end
@@ -75,7 +75,7 @@ POMDPs.observation(::TerminalPOMDP, a, sp) = Normal(sp)
 POMDPs.transition(::TerminalPOMDP, s, a) = Deterministic(s+a)
 @testset "pomdp terminal" begin
     pomdp =  TerminalPOMDP()
-    pf = SIRParticleFilter(pomdp, 100)
+    pf = BootstrapFilter(pomdp, 100)
     bp = update(pf, initialize_belief(pf, Categorical([0.5, 0.5])), -1, 1.0)
     @test all(particles(bp) .== 1)
 end
