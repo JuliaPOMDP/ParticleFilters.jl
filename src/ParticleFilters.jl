@@ -11,8 +11,8 @@ import POMDPModelTools: obs_weight
 using StatsBase
 using Random
 using Statistics
-using POMDPPolicies
-using POMDPModelTools # for weighted_iterator
+using POMDPPolicies: AlphaVectorPolicy, alphavectors
+using POMDPModelTools: weighted_iterator 
 
 import Random: rand, gentype
 import Statistics: mean

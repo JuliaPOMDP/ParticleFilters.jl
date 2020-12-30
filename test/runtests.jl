@@ -83,10 +83,11 @@ end
 @testset "alpha" begin
     # test specific method for alpha vector policies and particle beliefs
     pomdp = BabyPOMDP()
-    # these values were gotten from FIB.jl
-    # alphas = [-29.4557 -36.5093; -19.4557 -16.0629]
-    alphas = [-16.0629 -19.4557; -36.5093 -29.4557]
-    policy = AlphaVectorPolicy(pomdp, alphas, ordered_actions(pomdp))
+    # the first two alphas were gotten from FIB.jl; the third is from always feeding (see #46)
+    alphas = [[-16.0629, -36.5093], [-19.4557, -29.4557], [-50.0, -60.0]]
+    amap = collect(ordered_actions(pomdp))
+    push!(amap, true)
+    policy = AlphaVectorPolicy(pomdp, alphas, amap)
 
     # initial belief is 100% confidence in baby being hungry
     b = ParticleCollection([true for i=1:100])
