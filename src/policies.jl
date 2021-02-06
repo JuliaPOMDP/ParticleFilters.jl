@@ -11,8 +11,7 @@ the corresponding particle
 function unnormalized_util(p::AlphaVectorPolicy, b::AbstractParticleBelief)
     util = zeros(length(alphavectors(p)))
     for (i, s) in enumerate(particles(b))
-        j = stateindex(p.pomdp, s)
-        util += weight(b, i)*getindex.(p.alphas, (j,))
+        util .+= weight(b, i) .* getindex.(p.alphas, stateindex(p.pomdp, s))
     end
     return util
 end
