@@ -37,7 +37,7 @@ end
 function resample(r::ImportanceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
     ps = Array{S}(undef, r.n)
     if weight_sum(b) <= 0
-        warn("Invalid weights in particle filter: weight_sum = $(weight_sum(b))")
+        @warn("Invalid weights in particle filter: weight_sum = $(weight_sum(b))")
     end
     #XXX this may break if StatsBase changes
     StatsBase.alias_sample!(rng, particles(b), Weights(weights(b), weight_sum(b)), ps)
