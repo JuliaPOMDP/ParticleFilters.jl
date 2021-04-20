@@ -25,7 +25,7 @@ function update(up::UnweightedParticleFilter, b::ParticleCollection, a, o)
         i += 1
     end
     if isempty(new)
-        warn("""
+        @warn("""
              Particle Depletion!
 
              The UnweightedParticleFilter generated no particles consistent with observation $o. Consider upgrading to a BootstrapFilter or a BasicParticleFilter or creating your own domain-specific updater.
