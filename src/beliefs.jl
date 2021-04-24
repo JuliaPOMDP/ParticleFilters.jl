@@ -145,7 +145,7 @@ end
 Statistics.mean(b::WeightedParticleBelief) = sum(b.weights .* b.particles) / weight_sum(b)
 function Statistics.cov(b::WeightedParticleBelief)
     diff = hcat(b.particles...) .- mean(b)
-    diff .* reshape(b.weights, 1, size(diff, 2)) * diff' / weight_sum(b)
+    (diff .* b.weights') * diff' / weight_sum(b)
 end
 
 ### Shared implementations ###

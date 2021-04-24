@@ -30,9 +30,11 @@ w = [4.0, 1.0, 1.0]
         b = WeightedParticleBelief(p, w)
         @inferred mean(b)
         @test mean(b) ≈ 9
+        cov(b)
 
         b = WeightedParticleBelief(p2d, w)
         # @inferred mean(b)  # not type stable
         @test mean(b) ≈ [9, 9]
+        cov(b)
     end
 end
