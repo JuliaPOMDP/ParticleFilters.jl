@@ -9,6 +9,7 @@ using POMDPLinter: @implemented
 
 import POMDPModelTools: obs_weight
 using StatsBase
+using LinearAlgebra
 using Random
 using Statistics
 using POMDPPolicies: AlphaVectorPolicy, alphavectors
