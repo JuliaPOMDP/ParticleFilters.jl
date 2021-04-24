@@ -16,7 +16,7 @@ using POMDPPolicies: AlphaVectorPolicy, alphavectors
 using POMDPModelTools: weighted_iterator 
 
 import Random: rand, gentype
-import Statistics: mean
+import Statistics: mean, cov, var
 
 export
     AbstractParticleBelief,

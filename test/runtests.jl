@@ -20,6 +20,7 @@ end
 
 include("example.jl")
 include("domain_specific_resampler.jl")
+include("beliefs.jl")
 
 struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
 @testset "infer" begin

@@ -101,6 +101,10 @@ particle(b::ParticleCollection, i::Int) = b.particles[i]
 rand(rng::AbstractRNG, b::ParticleCollection) = b.particles[rand(rng, 1:length(b.particles))]
 Statistics.mean(b::ParticleCollection) = sum(b.particles)/length(b.particles)
 support(b::ParticleCollection) = unique(particles(b))
+function Statistics.cov(b::ParticleCollection)
+    diff = hcat(b.particles...) .- mean(b)
+    (diff * diff') / length(b.particles)
+end
 
 ## Weighted ##
 
@@ -135,7 +139,14 @@ function Random.rand(rng::AbstractRNG, b::WeightedParticleBelief)
     end
     return particles(b)[i]
 end
-Statistics.mean(b::WeightedParticleBelief) = dot(b.weights, b.particles)/weight_sum(b)
+# Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Real} = dot(b.weights, b.particles) / weight_sum(b)
+# Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Vector} = hcat(b.particles...) * b.weights / weight_sum(b)
+# Statistics.mean(b::WeightedParticleBelief{Vector{T}}) where {T <: Real} = sum(b.weights .* b.particles) / weight_sum(b)
+Statistics.mean(b::WeightedParticleBelief) = sum(b.weights .* b.particles) / weight_sum(b)
+function Statistics.cov(b::WeightedParticleBelief)
+    diff = hcat(b.particles...) .- mean(b)
+    diff .* reshape(b.weights, 1, size(diff, 2)) * diff' / weight_sum(b)
+end
 
 ### Shared implementations ###
 function probdict(b::AbstractParticleBelief{S}) where {S}
@@ -171,3 +182,4 @@ pdf(b::AbstractParticleBelief{S}, s::S) where {S} = get(probdict(b), s, 0.0)
 
 mode(b::AbstractParticleBelief) = argmax(probdict(b)) # don't know if this is the most efficient way
 support(b::AbstractParticleBelief) = keys(probdict(b))
+Statistics.var(b::AbstractParticleBelief) = diag(cov(b))
