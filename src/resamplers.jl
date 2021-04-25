@@ -60,7 +60,7 @@ function resample(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::A
     i = 1
     U = r
     for m in 1:re.n
-        while U > c
+        while U > c && i < n_particles(b)
             i += 1
             c += weight(b, i)
         end
