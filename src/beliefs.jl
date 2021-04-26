@@ -93,10 +93,10 @@ ParticleCollection(p::AbstractVector{T}) where T = ParticleCollection{T}(p, noth
 
 n_particles(b::ParticleCollection) = length(b.particles)
 particles(p::ParticleCollection) = p.particles
-weights(b::ParticleCollection) = fill(1/n_particles(b),n_particles(b))
-weighted_particles(p::ParticleCollection) = (s=>1.0/length(p.particles) for s in p.particles)
-weight_sum(::ParticleCollection) = 1.0
-weight(b::ParticleCollection, i::Int) = 1.0/length(b.particles)
+weights(b::ParticleCollection) = ones(n_particles(b))
+weighted_particles(p::ParticleCollection) = (s=>1.0 for s in p.particles)
+weight_sum(b::ParticleCollection) = n_particles(b)
+weight(b::ParticleCollection, i::Int) = 1.0
 particle(b::ParticleCollection, i::Int) = b.particles[i]
 rand(rng::AbstractRNG, b::ParticleCollection) = b.particles[rand(rng, 1:length(b.particles))]
 Statistics.mean(b::ParticleCollection) = sum(b.particles)/length(b.particles)
