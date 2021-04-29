@@ -99,11 +99,15 @@ weight_sum(b::ParticleCollection) = n_particles(b)
 weight(b::ParticleCollection, i::Int) = 1.0
 particle(b::ParticleCollection, i::Int) = b.particles[i]
 rand(rng::AbstractRNG, b::ParticleCollection) = b.particles[rand(rng, 1:length(b.particles))]
-Statistics.mean(b::ParticleCollection) = sum(b.particles)/length(b.particles)
 support(b::ParticleCollection) = unique(particles(b))
-function Statistics.cov(b::ParticleCollection)
-    diff = hcat(b.particles...) .- mean(b)
-    (diff * diff') / length(b.particles)
+Statistics.mean(b::ParticleCollection) = sum(b.particles) / length(b.particles)
+function Statistics.cov(b::ParticleCollection{T}) where {T <: Number} # uncorrected covariance
+    centralized = b.particles .- mean(b)
+    centralized' * centralized / length(b.particles) # dot product
+end
+function Statistics.cov(b::ParticleCollection{T}) where {T <: Vector} # uncorrected covariance
+    centralized = reduce(hcat, b.particles) .- mean(b)
+    centralized * centralized' / length(b.particles) # outer product
 end
 
 ## Weighted ##
@@ -139,13 +143,15 @@ function Random.rand(rng::AbstractRNG, b::WeightedParticleBelief)
     end
     return particles(b)[i]
 end
-# Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Real} = dot(b.weights, b.particles) / weight_sum(b)
-# Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Vector} = hcat(b.particles...) * b.weights / weight_sum(b)
-# Statistics.mean(b::WeightedParticleBelief{Vector{T}}) where {T <: Real} = sum(b.weights .* b.particles) / weight_sum(b)
-Statistics.mean(b::WeightedParticleBelief) = sum(b.weights .* b.particles) / weight_sum(b)
-function Statistics.cov(b::WeightedParticleBelief)
-    diff = hcat(b.particles...) .- mean(b)
-    (diff .* b.weights') * diff' / weight_sum(b)
+Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Number} = dot(b.weights, b.particles) / weight_sum(b)
+Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Vector} = reduce(hcat, b.particles) * b.weights / weight_sum(b)
+function Statistics.cov(b::WeightedParticleBelief{T}) where {T <: Number} # uncorrected covariance
+    centralized = b.particles .- mean(b)
+    sum(centralized .* b.weights .* centralized) / weight_sum(b)
+end
+function Statistics.cov(b::WeightedParticleBelief{T}) where {T <: Vector} # uncorrected covariance
+    centralized = reduce(hcat, b.particles) .- mean(b)
+    (centralized .* b.weights') * centralized' / weight_sum(b)
 end
 
 ### Shared implementations ###
@@ -182,4 +188,5 @@ pdf(b::AbstractParticleBelief{S}, s::S) where {S} = get(probdict(b), s, 0.0)
 
 mode(b::AbstractParticleBelief) = argmax(probdict(b)) # don't know if this is the most efficient way
 support(b::AbstractParticleBelief) = keys(probdict(b))
-Statistics.var(b::AbstractParticleBelief) = diag(cov(b))
+Statistics.var(b::AbstractParticleBelief{T}) where {T <: Number} = cov(b)
+Statistics.var(b::AbstractParticleBelief{T}) where {T <: Vector} = diag(cov(b))
