@@ -9,13 +9,14 @@ using POMDPLinter: @implemented
 
 import POMDPModelTools: obs_weight
 using StatsBase
+using LinearAlgebra
 using Random
 using Statistics
 using POMDPPolicies: AlphaVectorPolicy, alphavectors
 using POMDPModelTools: weighted_iterator 
 
 import Random: rand, gentype
-import Statistics: mean
+import Statistics: mean, cov, var
 
 export
     AbstractParticleBelief,

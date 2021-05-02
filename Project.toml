@@ -4,6 +4,7 @@ repo = "https://github.com/JuliaPOMDP/ParticleFilters.jl"
 version = "0.5.3"
 
 [deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 POMDPLinter = "f3bd98c0-eb40-45e2-9eb1-f2763262d755"
 POMDPModelTools = "08074719-1b2a-587c-a292-00f91cc44415"
 POMDPPolicies = "182e52fb-cfd0-5e46-8c26-fd0667c990f4"
