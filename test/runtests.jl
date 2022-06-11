@@ -60,7 +60,7 @@ struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
         bp = @inferred update(uf, ps, a, o)
 
         wp1 = @inferred collect(weighted_particles(ParticleCollection([1,2])))
-        wp2 = @inferred collect(weighted_particles(WeightedParticleBelief([1,2], [0.5, 0.5])))
+        wp2 = @inferred collect(weighted_particles(WeightedParticleBelief([1,2], [1., 1.])))
         @test wp1 == wp2
     end
 
