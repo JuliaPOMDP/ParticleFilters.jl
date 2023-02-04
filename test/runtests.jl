@@ -3,9 +3,7 @@ using POMDPs
 using POMDPModels
 using POMDPLinter: @implemented
 using Test
-using POMDPPolicies
-using POMDPSimulators
-using POMDPModelTools
+using POMDPTools
 using Random
 using Distributions
 using NBInclude
