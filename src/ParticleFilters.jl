@@ -7,13 +7,13 @@ import POMDPs: action, value
 
 using POMDPLinter: @implemented
 
-import POMDPModelTools: obs_weight
+import POMDPTools.ModelTools:obs_weight
 using StatsBase
 using LinearAlgebra
 using Random
 using Statistics
-using POMDPPolicies: AlphaVectorPolicy, alphavectors
-using POMDPModelTools: weighted_iterator 
+using POMDPTools.Policies: AlphaVectorPolicy, alphavectors
+using POMDPTools.ModelTools: weighted_iterator 
 
 import Random: rand, gentype
 import Statistics: mean, cov, var

@@ -11,7 +11,7 @@ The [`ParticleFilterModel`](@ref) provides a standard structure for these two el
 
 The dynamics and reweighting models may also be specified separately using [`PredictModel`](@ref) and [`ReweightModel`](@ref).
 
-Note that a [`POMDP`](http://juliapomdp.github.io/POMDPs.jl/stable/api/#POMDPs.POMDP) with [`POMDPs.gen`](http://juliapomdp.github.io/POMDPs.jl/stable/api/#POMDPs.gen) and [`POMDPModelTools.obs_weight`](https://juliapomdp.github.io/POMDPModelTools.jl/stable/interface_extensions.html#POMDPModelTools.obs_weight) implemented may also serve as a model.
+Note that a [`POMDP`](http://juliapomdp.github.io/POMDPs.jl/stable/api/#POMDPs.POMDP) with [`POMDPs.gen`](http://juliapomdp.github.io/POMDPs.jl/stable/api/#POMDPs.gen) and [`POMDPTools.ModelTools.obs_weight`](https://juliapomdp.github.io/POMDPs.jl/stable/POMDPTools/model/#POMDPTools.ModelTools.obs_weight) implemented may also serve as a model.
 
 ## Docstrings
 
