@@ -98,7 +98,7 @@ weighted_particles(p::ParticleCollection) = (s=>1.0 for s in p.particles)
 weight_sum(b::ParticleCollection) = n_particles(b)
 weight(b::ParticleCollection, i::Int) = 1.0
 particle(b::ParticleCollection, i::Int) = b.particles[i]
-rand(rng::AbstractRNG, b::ParticleCollection) = b.particles[rand(rng, 1:length(b.particles))]
+rand(rng::AbstractRNG, sampler::Random.SamplerTrivial{<:ParticleCollection}) = sampler[].particles[rand(rng, 1:length(sampler[].particles))]
 support(b::ParticleCollection) = unique(particles(b))
 Statistics.mean(b::ParticleCollection) = sum(b.particles) / length(b.particles)
 function Statistics.cov(b::ParticleCollection{T}) where {T <: Number} # uncorrected covariance
@@ -133,7 +133,8 @@ weight(b::WeightedParticleBelief, i::Int) = b.weights[i]
 particle(b::WeightedParticleBelief, i::Int) = b.particles[i]
 weights(b::WeightedParticleBelief) = b.weights
 
-function Random.rand(rng::AbstractRNG, b::WeightedParticleBelief)
+function Random.rand(rng::AbstractRNG, sampler::Random.SamplerTrivial{<:WeightedParticleBelief})
+    b = sampler[]
     t = rand(rng) * weight_sum(b)
     i = 1
     cw = b.weights[1]
