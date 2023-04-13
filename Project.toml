@@ -1,7 +1,7 @@
 name = "ParticleFilters"
 uuid = "c8b314e2-9260-5cf8-ae76-3be7461ca6d0"
 repo = "https://github.com/JuliaPOMDP/ParticleFilters.jl"
-version = "0.5.4"
+version = "0.5.5"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
