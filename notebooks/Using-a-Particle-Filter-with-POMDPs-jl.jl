@@ -7,7 +7,8 @@ using InteractiveUtils
 # ╔═╡ 97400df6-f277-11ea-3e97-77cfa98c1d44
 begin
 	import Pkg
-	Pkg.activate(".")
+	Pkg.activate(@__DIR__)
+    Pkg.instantiate()
 	using ParticleFilters
 	using POMDPs
 	using POMDPModels

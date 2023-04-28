@@ -16,7 +16,8 @@ end
 # ╔═╡ 5af7cd80-f262-11ea-2c84-65b966027d9b
 begin
 	import Pkg
-	Pkg.activate(".")
+	Pkg.activate(@__DIR__)
+    Pkg.instantiate()
 	using ParticleFilters
 	using Distributions
 	using StaticArrays

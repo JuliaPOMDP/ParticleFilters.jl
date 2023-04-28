@@ -2,6 +2,4 @@
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 POMDPs = "a93abf59-7444-517b-a68a-c42f96afdd7d"
 ParticleFilters = "c8b314e2-9260-5cf8-ae76-3be7461ca6d0"
-
-[compat]
-Documenter = "~0.20"
+PlutoSliderServer = "2fc8631c-6f24-4c5b-bca7-cbb509c42db4"
