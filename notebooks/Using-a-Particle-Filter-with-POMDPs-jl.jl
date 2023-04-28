@@ -12,8 +12,7 @@ begin
 	using ParticleFilters
 	using POMDPs
 	using POMDPModels
-	using POMDPSimulators
-	using POMDPPolicies
+	using POMDPTools
 	using Random
 	using Plots
 	using PlutoUI
