@@ -28,10 +28,10 @@ y = 3.0
 b_new = update(pf, b, u, y)
 ```
 
-There are [tutorials](./notebooks) for three ways to use the particle filters:
-1. As an [estimator for feedback control](./notebooks/Using-a-Particle-Filter-for-Feedback-Control.html),
-2. to [filter time-series measurements](./notebooks/Filtering-a-Trajectory-or-Data-Series.html), and
-3. as an [updater for POMDPs.jl](./notebooks/Using-a-Particle-Filter-with-POMDPs-jl.html).
+There are [tutorials](notebooks/) for three ways to use the particle filters:
+1. As an [estimator for feedback control](notebooks/Using-a-Particle-Filter-for-Feedback-Control.html),
+2. to [filter time-series measurements](notebooks/Filtering-a-Trajectory-or-Data-Series.html), and
+3. as an [updater for POMDPs.jl](notebooks/Using-a-Particle-Filter-with-POMDPs-jl.html).
 
 For documentation on all aspects of the package, see the contents below.
 
