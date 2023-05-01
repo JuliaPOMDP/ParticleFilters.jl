@@ -6,9 +6,8 @@ using Test
 using POMDPTools
 using Random
 using Distributions
-using NBInclude
 
-struct P <: POMDP{Nothing, Nothing, Nothing} end
+struct P <: POMDP{Nothing,Nothing,Nothing} end
 ParticleFilters.obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing) = 1.0
 
 @testset "implemented" begin
@@ -20,7 +19,7 @@ include("example.jl")
 include("domain_specific_resampler.jl")
 include("beliefs.jl")
 
-struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
+struct ContinuousPOMDP <: POMDP{Float64,Float64,Float64} end
 @testset "infer" begin
     p = TigerPOMDP()
     filter = BootstrapFilter(p, 10000)
@@ -46,7 +45,7 @@ struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
         b = ParticleCollection(1:1000)
         rb1 = @inferred resample(rs, b, MersenneTwister(3))
         rb2 = @inferred resample(rs, WeightedParticleBelief(particles(b), ones(n_particles(b))), MersenneTwister(3))
-        @test all(particles(rb1).==particles(rb2))
+        @test all(particles(rb1) .== particles(rb2))
     end
 
     @testset "unweighted" begin
@@ -57,8 +56,8 @@ struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
         sp, o = @inferred @gen(:sp, :o)(p, rand(rng, ps), a, rng)
         bp = @inferred update(uf, ps, a, o)
 
-        wp1 = @inferred collect(weighted_particles(ParticleCollection([1,2])))
-        wp2 = @inferred collect(weighted_particles(WeightedParticleBelief([1,2], [1., 1.])))
+        wp1 = @inferred collect(weighted_particles(ParticleCollection([1, 2])))
+        wp2 = @inferred collect(weighted_particles(WeightedParticleBelief([1, 2], [1.0, 1.0])))
         @test wp1 == wp2
     end
 
@@ -68,12 +67,12 @@ struct ContinuousPOMDP <: POMDP{Float64, Float64, Float64} end
     end
 end
 
-struct TerminalPOMDP <: POMDP{Int, Int, Float64} end
+struct TerminalPOMDP <: POMDP{Int,Int,Float64} end
 POMDPs.isterminal(::TerminalPOMDP, s) = s == 1
 POMDPs.observation(::TerminalPOMDP, a, sp) = Normal(sp)
-POMDPs.transition(::TerminalPOMDP, s, a) = Deterministic(s+a)
+POMDPs.transition(::TerminalPOMDP, s, a) = Deterministic(s + a)
 @testset "pomdp terminal" begin
-    pomdp =  TerminalPOMDP()
+    pomdp = TerminalPOMDP()
     pf = BootstrapFilter(pomdp, 100)
     bp = update(pf, initialize_belief(pf, Categorical([0.5, 0.5])), -1, 1.0)
     @test all(particles(bp) .== 1)
@@ -89,34 +88,31 @@ end
     policy = AlphaVectorPolicy(pomdp, alphas, amap)
 
     # initial belief is 100% confidence in baby being hungry
-    b = ParticleCollection([true for i=1:100])
+    b = ParticleCollection([true for i = 1:100])
 
     # because baby is hungry, policy should feed (return true)
     @test action(policy, b) == true
     @test isapprox(value(policy, b), -29.4557)
 end
 
-
-is_ci = get(ENV, "CI", "false") == "true"
-is_travis = get(ENV, "TRAVIS", "false") == "true"
-
-@show is_ci
-@show is_travis
-
-@warn("Notebook smoke testing is disabled on JuliaCI. We should re-enable it asap")
-
-if !is_ci || is_travis
+# Note: we wrap each notebook in a module to avoid pollution of the global namespace.
+# See also: https://github.com/JuliaLang/julia/issues/40189#issuecomment-871250226
+cd("../notebooks/") do
     @testset "data series" begin
-        cd("../notebooks") do
-            @nbinclude("../notebooks/Filtering-a-Trajectory-or-Data-Series.ipynb")
+        @eval Module() begin
+            Base.include(@__MODULE__, "../notebooks/Filtering-a-Trajectory-or-Data-Series.jl")
         end
     end
 
     @testset "feedback" begin
-        @nbinclude("../notebooks/Using-a-Particle-Filter-for-Feedback-Control.ipynb"; softscope=true)
+        @eval Module() begin
+            Base.include(@__MODULE__, "../notebooks/Using-a-Particle-Filter-for-Feedback-Control.jl")
+        end
     end
 
     @testset "pomdps" begin
-        @nbinclude("../notebooks/Using-a-Particle-Filter-with-POMDPs-jl.ipynb")
+        @eval Module() begin
+            Base.include(@__MODULE__, "../notebooks/Using-a-Particle-Filter-with-POMDPs-jl.jl")
+        end
     end
 end
