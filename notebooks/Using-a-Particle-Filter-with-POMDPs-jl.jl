@@ -39,7 +39,7 @@ pomdp = LightDark1D();
 N = 5000;
 
 # ╔═╡ 07460420-f278-11ea-0e96-e9881f22016e
-up = SIRParticleFilter(pomdp, N; rng = rng);
+up = BootstrapFilter(pomdp, N, rng);
 
 # ╔═╡ 074f4968-f278-11ea-026f-c5ceaf12774e
 policy = FunctionPolicy(b->1);

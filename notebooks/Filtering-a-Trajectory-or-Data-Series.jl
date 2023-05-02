@@ -85,7 +85,7 @@ We can use an SIR particle filter to get a better estimate of the state. Note th
 @bind n Slider(10:1000; default=500, show_value=true)
 
 # ╔═╡ 050c9b18-f1df-11ea-2037-3d0a836023f9
-fil = SIRParticleFilter(m, n);
+fil = BootstrapFilter(m, n);
 
 # ╔═╡ 050d5eca-f1df-11ea-30ea-f15b29c10081
 # construct initial belief
