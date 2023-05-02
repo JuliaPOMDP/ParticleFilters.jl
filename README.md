@@ -39,10 +39,10 @@ b_new = update(pf, b, u, y)
 
 This is a very simple example and the framework can accommodate a variety of more complex use cases. More details can be found in the documentation linked to below.
 
-There are tutorials for three ways to use the particle filters:
-1. As an [estimator for feedback control](notebooks/Using-a-Particle-Filter-for-Feedback-Control.ipynb),
-2. to [filter time-series measurements](notebooks/Filtering-a-Trajectory-or-Data-Series.ipynb), and
-3. as an [updater for POMDPs.jl](notebooks/Using-a-Particle-Filter-with-POMDPs-jl.ipynb).
+There are [tutorials](https://juliapomdp.github.io/ParticleFilters.jl/latest/notebooks/) for three ways to use the particle filters:
+1. As an [estimator for feedback control](https://juliapomdp.github.io/ParticleFilters.jl/latest/notebooks//Using-a-Particle-Filter-for-Feedback-Control.html),
+2. to [filter time-series measurements](https://juliapomdp.github.io/ParticleFilters.jl/latest/notebooks/Filtering-a-Trajectory-or-Data-Series.html), and
+3. as an [updater for POMDPs.jl](https://juliapomdp.github.io/ParticleFilters.jl/latest/notebooks/Using-a-Particle-Filter-with-POMDPs-jl.html).
 
 # Documentation
 
