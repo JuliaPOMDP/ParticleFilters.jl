@@ -116,7 +116,7 @@ model = ParticleFilterModel{Vector{Float64}}(f, g);
 @bind N Slider(10:1000; default = 500, show_value = true)
 
 # ╔═╡ 9ca26ce4-f263-11ea-36b3-67ef6dc1db6e
-filter = SIRParticleFilter(model, N);
+filter = BootstrapFilter(model, N);
 
 # ╔═╡ a3974042-f263-11ea-3341-cbc37f25e3f9
 md"""
