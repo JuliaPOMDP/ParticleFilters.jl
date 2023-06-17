@@ -14,12 +14,12 @@ This function is intended for post-processing pre-recorded data with a particle 
 # Return value
 A sequence of particle collections. This will not include `b0` and will be the same length as `us` and `ys`. Each particle collection in this sequence is the one after being updated with the corresponding measurement in `ys`.
 """
-function runfilter(f::Updater, b0, us::AbstractVector, ys::AbstractVector)
-    b = initialize_belief(f, b0)
+function runfilter(fil::Updater, b0, us::AbstractVector, ys::AbstractVector)
+    b = initialize_belief(fil, b0)
     bs = Any[]
     @assert length(ys) >= length(us)
     for i in 1:length(us)
-        b = update(f, b, us[i], ys[i])
+        b = update(fil, b, us[i], ys[i])
         push!(bs, b)
     end
     return bs
