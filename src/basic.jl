@@ -43,7 +43,7 @@ This should usually be an empty `Vector{S}` where `S` is the type of the state f
 """
 function particle_memory end
 
-function update(up::BasicParticleFilter, b::ParticleCollection, a, o)
+function update(up::BasicParticleFilter, b::ParticleCollection, a, o, τ = 0.5)
     pm = up._particle_memory
     wm = up._weight_memory
     resize!(pm, n_particles(b))
@@ -51,12 +51,16 @@ function update(up::BasicParticleFilter, b::ParticleCollection, a, o)
     predict!(pm, up.predict_model, b, a, o, up.rng)
     reweight!(wm, up.reweight_model, b, a, pm, o, up.rng)
 
-    return resample(up.resampler,
-                    WeightedParticleBelief(pm, wm, sum(wm), nothing),
-                    up.predict_model,
-                    up.reweight_model,
-                    b, a, o,
-                    up.rng)
+    if (calculate_ess(wm) < τ)
+        return resample(up.resampler,
+                        WeightedParticleBelief(pm, wm, sum(wm), nothing),
+                        up.predict_model,
+                        up.reweight_model,
+                        b, a, o,
+                        up.rng)
+    end
+
+    return ParticleCollection(up._particle_memory)
 end
 
 function Random.seed!(f::BasicParticleFilter, seed)
@@ -142,3 +146,19 @@ function reweight(m, b, args...)
     return wm
 end
 reweight(f::BasicParticleFilter, args...) = reweight(f.reweight_model, args...)
+
+
+"""
+This function computes Effective Sample Size (ESS) which estimates the number of particles that are effectively contributing to the approximation of the target distribution. 
+
+ESS is divided by `num_particles` to make it easier to get a uniform threshold (scale between 0 and 1) for resampling across different particle filters.
+
+M. S. Arulampalam, S. Maskell, N. Gordon and T. Clapp, "A tutorial on particle filters for online nonlinear/non-Gaussian Bayesian tracking," in IEEE Transactions on Signal Processing, vol. 50, no. 2, pp. 174-188, Feb. 2002, doi: 10.1109/78.978374.
+keywords: {Tutorial;Particle filters;Nonlinear dynamical systems;Costs;Signal processing;Bayesian methods;Particle tracking;Kalman filters;Filtering;Monte Carlo methods},
+"""
+function calculate_ess(weights)
+    num_particles = length(weights)
+    normalized_weights = weights / sum(weights) 
+    ess = 1.0 / sum(normalized_weights .^ 2) / num_particles
+    return ess
+end
