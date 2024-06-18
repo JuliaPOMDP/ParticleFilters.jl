@@ -33,11 +33,14 @@ n = 100
 m = LightDark1D()
 up = BasicParticleFilter(m, LDResampler(n), n)
 
-resampled_particle_collection = resample(
-    LDResampler(n), 
-    create_random_weighted_particle_belief(n),
-    up.predict_model, up.reweight_model,
-    nothing, 0, nothing, nothing)
+resampled_particle_collection = resample(LDResampler(n), 
+                                         create_random_weighted_particle_belief(n),
+                                         up.predict_model, 
+                                         up.reweight_model,
+                                         nothing, 
+                                         0, 
+                                         nothing, 
+                                         nothing)
 @test first(particles(resampled_particle_collection)) == LightDark1DState(-1, 0.0)
 
 p2 = FunctionPolicy(b->2)

@@ -1,8 +1,8 @@
 ### Basic Particle Filter ###
 # implements the POMDPs.jl Updater interface
 """
-	BasicParticleFilter(predict_model, reweight_model, resampler, n_init::Integer, rng::AbstractRNG, resampling_threshold::Float64)
-	BasicParticleFilter(model, resampler, n_init::Integer, rng::AbstractRNG, resampling_threshold::Float64)
+    BasicParticleFilter(predict_model, reweight_model, resampler, n_init::Integer, rng::AbstractRNG, resampling_threshold::Float64)
+    BasicParticleFilter(model, resampler, n_init::Integer, rng::AbstractRNG, resampling_threshold::Float64)
 
 Construct a basic particle filter with three steps: predict, reweight, and resample.
 
@@ -11,32 +11,32 @@ In the second constructor, `model` is used for both the prediction and reweighti
 The default value for `resampling_threshold` is set to 0.5.
 """
 mutable struct BasicParticleFilter{PM, RM, RS, RNG <: AbstractRNG, PMEM} <: Updater
-	predict_model::PM
-	reweight_model::RM
-	resampler::RS
-	n_init::Int
-	rng::RNG
+    predict_model::PM
+    reweight_model::RM
+    resampler::RS
+    n_init::Int
+    rng::RNG
 	resampling_threshold::Float64
-	_particle_memory::PMEM
-	_weight_memory::Vector{Float64}
+    _particle_memory::PMEM
+    _weight_memory::Vector{Float64}
 end
 
 ## Constructors ##
 function BasicParticleFilter(model, resampler, n::Integer, rng::AbstractRNG = Random.GLOBAL_RNG, resampling_threshold::Float64 = 0.5)
-	return BasicParticleFilter(model, model, resampler, n, rng, resampling_threshold)
+    return BasicParticleFilter(model, model, resampler, n, rng, resampling_threshold)
 end
 
 
 function BasicParticleFilter(pmodel, rmodel, resampler, n::Integer, rng::AbstractRNG = Random.GLOBAL_RNG, resampling_threshold::Float64 = 0.5)
-	return BasicParticleFilter(pmodel,
-		rmodel,
-		resampler,
-		n,
-		rng,
-		resampling_threshold,
-		particle_memory(pmodel),
-		Float64[],
-	)
+    return BasicParticleFilter(pmodel,
+                               rmodel,
+                               resampler,
+                               n,
+                               rng,
+							   resampling_threshold
+                               particle_memory(pmodel),
+                               Float64[]
+                              )
 end
 
 """
