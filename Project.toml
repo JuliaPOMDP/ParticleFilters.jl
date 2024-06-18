@@ -1,7 +1,7 @@
 name = "ParticleFilters"
 uuid = "c8b314e2-9260-5cf8-ae76-3be7461ca6d0"
 repo = "https://github.com/JuliaPOMDP/ParticleFilters.jl"
-version = "0.5.6"
+version = "0.5.7"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -14,8 +14,8 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 POMDPLinter = "0.1"
-POMDPTools = "0.1"
-POMDPs = "0.9"
+POMDPTools = "0.1, 1"
+POMDPs = "0.9, 1"
 Statistics = "1"
 StatsBase = "0.32, 0.33, 0.34"
 julia = "1.1"
