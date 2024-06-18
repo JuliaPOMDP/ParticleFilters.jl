@@ -10,7 +10,7 @@ In the second constructor, `model` is used for both the prediction and reweighti
 
 The default value for `resampling_threshold` is set to 0.5.
 """
-mutable struct BasicParticleFilter{PM, RM, RS, RNG <: AbstractRNG, PMEM} <: Updater
+mutable struct BasicParticleFilter{PM,RM,RS,RNG<:AbstractRNG,PMEM} <: Updater
     predict_model::PM
     reweight_model::RM
     resampler::RS
@@ -22,12 +22,12 @@ mutable struct BasicParticleFilter{PM, RM, RS, RNG <: AbstractRNG, PMEM} <: Upda
 end
 
 ## Constructors ##
-function BasicParticleFilter(model, resampler, n::Integer, rng::AbstractRNG = Random.GLOBAL_RNG, resampling_threshold::Float64 = 0.5)
+function BasicParticleFilter(model, resampler, n::Integer, rng::AbstractRNG=Random.GLOBAL_RNG, resampling_threshold::Float64=0.5)
     return BasicParticleFilter(model, model, resampler, n, rng, resampling_threshold)
 end
 
 
-function BasicParticleFilter(pmodel, rmodel, resampler, n::Integer, rng::AbstractRNG = Random.GLOBAL_RNG, resampling_threshold::Float64 = 0.5)
+function BasicParticleFilter(pmodel, rmodel, resampler, n::Integer, rng::AbstractRNG=Random.GLOBAL_RNG, resampling_threshold::Float64=0.5)
     return BasicParticleFilter(pmodel,
                                rmodel,
                                resampler,
