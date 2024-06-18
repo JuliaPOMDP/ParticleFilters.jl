@@ -16,7 +16,7 @@ mutable struct BasicParticleFilter{PM, RM, RS, RNG <: AbstractRNG, PMEM} <: Upda
     resampler::RS
     n_init::Int
     rng::RNG
-	resampling_threshold::Float64
+    resampling_threshold::Float64
     _particle_memory::PMEM
     _weight_memory::Vector{Float64}
 end
@@ -33,7 +33,7 @@ function BasicParticleFilter(pmodel, rmodel, resampler, n::Integer, rng::Abstrac
                                resampler,
                                n,
                                rng,
-							   resampling_threshold
+							   resampling_threshold,
                                particle_memory(pmodel),
                                Float64[]
                               )
