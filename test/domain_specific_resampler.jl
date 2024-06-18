@@ -20,20 +20,29 @@ function ParticleFilters.resample(r::LDResampler,
     return resample(r.lv, bp, rng)
 end
 
+function create_random_weighted_particle_belief(n::Int)
+    particles = [LightDark1DState(rand(-1:1), rand(-1:1)) for _ in 1:n]
+    weights = rand(n)
+    weights /= sum(weights)
+    return WeightedParticleBelief(particles, weights)
+end
 
 @testset "domain_specific" begin
 
 n = 100
 m = LightDark1D()
 up = BasicParticleFilter(m, LDResampler(n), n)
-p = FunctionPolicy(b->0)
 
-bp = first(stepthrough(m, p, up, "bp"))
-@test first(particles(bp)) == LightDark1DState(-1, 0.0)
+resampled_particle_collection = resample(
+    LDResampler(n), 
+    create_random_weighted_particle_belief(n),
+    up.predict_model, up.reweight_model,
+    nothing, 0, nothing, nothing)
+@test first(particles(resampled_particle_collection)) == LightDark1DState(-1, 0.0)
 
 p2 = FunctionPolicy(b->2)
 for bp in stepthrough(m, p2, up, "bp", max_steps=3)
-    @test bp isa ParticleCollection{LightDark1DState}
+    @test bp isa WeightedParticleBelief{LightDark1DState}
     @test n_particles(bp) == n
 end
 

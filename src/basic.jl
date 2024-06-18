@@ -1,37 +1,42 @@
 ### Basic Particle Filter ###
 # implements the POMDPs.jl Updater interface
 """
-    BasicParticleFilter(predict_model, reweight_model, resampler, n_init::Integer, rng::AbstractRNG)
-    BasicParticleFilter(model, resampler, n_init::Integer, rng::AbstractRNG)
+	BasicParticleFilter(predict_model, reweight_model, resampler, n_init::Integer, rng::AbstractRNG, resampling_threshold::Float64)
+	BasicParticleFilter(model, resampler, n_init::Integer, rng::AbstractRNG, resampling_threshold::Float64)
 
 Construct a basic particle filter with three steps: predict, reweight, and resample.
 
 In the second constructor, `model` is used for both the prediction and reweighting.
+
+The default value for `resampling_threshold` is set to 0.5.
 """
-mutable struct BasicParticleFilter{PM,RM,RS,RNG<:AbstractRNG,PMEM} <: Updater
-    predict_model::PM
-    reweight_model::RM
-    resampler::RS
-    n_init::Int
-    rng::RNG
-    _particle_memory::PMEM
-    _weight_memory::Vector{Float64}
+mutable struct BasicParticleFilter{PM, RM, RS, RNG <: AbstractRNG, PMEM} <: Updater
+	predict_model::PM
+	reweight_model::RM
+	resampler::RS
+	n_init::Int
+	rng::RNG
+	resampling_threshold::Float64
+	_particle_memory::PMEM
+	_weight_memory::Vector{Float64}
 end
 
 ## Constructors ##
-function BasicParticleFilter(model, resampler, n::Integer, rng::AbstractRNG=Random.GLOBAL_RNG)
-    return BasicParticleFilter(model, model, resampler, n, rng)
+function BasicParticleFilter(model, resampler, n::Integer, rng::AbstractRNG = Random.GLOBAL_RNG, resampling_threshold::Float64 = 0.5)
+	return BasicParticleFilter(model, model, resampler, n, rng, resampling_threshold)
 end
 
-function BasicParticleFilter(pmodel, rmodel, resampler, n::Integer, rng::AbstractRNG=Random.GLOBAL_RNG)
-    return BasicParticleFilter(pmodel,
-                               rmodel,
-                               resampler,
-                               n,
-                               rng,
-                               particle_memory(pmodel),
-                               Float64[]
-                              )
+
+function BasicParticleFilter(pmodel, rmodel, resampler, n::Integer, rng::AbstractRNG = Random.GLOBAL_RNG, resampling_threshold::Float64 = 0.5)
+	return BasicParticleFilter(pmodel,
+		rmodel,
+		resampler,
+		n,
+		rng,
+		resampling_threshold,
+		particle_memory(pmodel),
+		Float64[],
+	)
 end
 
 """
@@ -43,24 +48,25 @@ This should usually be an empty `Vector{S}` where `S` is the type of the state f
 """
 function particle_memory end
 
-function update(up::BasicParticleFilter, b::ParticleCollection, a, o, τ = 0.5)
+function update(up::BasicParticleFilter, b::AbstractParticleBelief, a, o)
     pm = up._particle_memory
     wm = up._weight_memory
     resize!(pm, n_particles(b))
     resize!(wm, n_particles(b))
+	if (calculate_ess(wm) < up.resampling_threshold)
+        resampled_particle_collection = resample(
+            up.resampler,
+            WeightedParticleBelief(pm, wm, sum(wm), nothing),
+            up.predict_model,
+            up.reweight_model,
+            b, a, o,
+            up.rng)
+		num_particles = n_particles(resampled_particle_collection)
+        return WeightedParticleBelief(resampled_particle_collection.particles, fill(1.0 / num_particles, num_particles))
+	end
     predict!(pm, up.predict_model, b, a, o, up.rng)
     reweight!(wm, up.reweight_model, b, a, pm, o, up.rng)
-
-    if (calculate_ess(wm) < τ)
-        return resample(up.resampler,
-                        WeightedParticleBelief(pm, wm, sum(wm), nothing),
-                        up.predict_model,
-                        up.reweight_model,
-                        b, a, o,
-                        up.rng)
-    end
-
-    return ParticleCollection(up._particle_memory)
+	return WeightedParticleBelief(pm, wm, sum(wm), nothing)
 end
 
 function Random.seed!(f::BasicParticleFilter, seed)
@@ -158,7 +164,7 @@ keywords: {Tutorial;Particle filters;Nonlinear dynamical systems;Costs;Signal pr
 """
 function calculate_ess(weights)
     num_particles = length(weights)
-    normalized_weights = weights / sum(weights) 
+    normalized_weights = weights ./ sum(weights) 
     ess = 1.0 / sum(normalized_weights .^ 2) / num_particles
     return ess
 end
