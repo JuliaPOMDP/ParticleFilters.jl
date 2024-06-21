@@ -8,7 +8,7 @@ Construct a basic particle filter with three steps: predict, reweight, and resam
 
 In the second constructor, `model` is used for both the prediction and reweighting.
 
-The default value for `resampling_threshold` is set to 0.5.
+The default value for `resampling_threshold` is set to 0.9.
 """
 mutable struct BasicParticleFilter{PM,RM,RS,RNG<:AbstractRNG,PMEM} <: Updater
     predict_model::PM
@@ -22,12 +22,12 @@ mutable struct BasicParticleFilter{PM,RM,RS,RNG<:AbstractRNG,PMEM} <: Updater
 end
 
 ## Constructors ##
-function BasicParticleFilter(model, resampler, n::Integer, rng::AbstractRNG=Random.GLOBAL_RNG, resampling_threshold::Float64=0.5)
+function BasicParticleFilter(model, resampler, n::Integer, rng::AbstractRNG=Random.GLOBAL_RNG, resampling_threshold::Float64=0.9)
     return BasicParticleFilter(model, model, resampler, n, rng, resampling_threshold)
 end
 
 
-function BasicParticleFilter(pmodel, rmodel, resampler, n::Integer, rng::AbstractRNG=Random.GLOBAL_RNG, resampling_threshold::Float64=0.5)
+function BasicParticleFilter(pmodel, rmodel, resampler, n::Integer, rng::AbstractRNG=Random.GLOBAL_RNG, resampling_threshold::Float64=0.9)
     return BasicParticleFilter(pmodel,
                                rmodel,
                                resampler,
@@ -53,6 +53,8 @@ function update(up::BasicParticleFilter, b::AbstractParticleBelief, a, o)
     wm = up._weight_memory
     resize!(pm, n_particles(b))
     resize!(wm, n_particles(b))
+    predict!(pm, up.predict_model, b, a, o, up.rng)
+    reweight!(wm, up.reweight_model, b, a, pm, o, up.rng)
     if (calculate_ess(wm) < up.resampling_threshold)
         resampled_particle_collection = resample(
             up.resampler,
@@ -63,10 +65,9 @@ function update(up::BasicParticleFilter, b::AbstractParticleBelief, a, o)
             up.rng)
 		num_particles = n_particles(resampled_particle_collection)
         return WeightedParticleBelief(resampled_particle_collection.particles, fill(1.0 / num_particles, num_particles))
+    else
+        return WeightedParticleBelief(pm, wm, sum(wm), nothing)
     end
-    predict!(pm, up.predict_model, b, a, o, up.rng)
-    reweight!(wm, up.reweight_model, b, a, pm, o, up.rng)
-    return WeightedParticleBelief(pm, wm, sum(wm), nothing)
 end
 
 function Random.seed!(f::BasicParticleFilter, seed)
