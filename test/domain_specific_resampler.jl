@@ -20,12 +20,6 @@ function ParticleFilters.resample(r::LDResampler,
     return resample(r.lv, bp, rng)
 end
 
-function create_random_weighted_particle_belief(n::Int)
-    particles = [LightDark1DState(rand(-1:1), rand(-1:1)) for _ in 1:n]
-    weights = rand(n)
-    weights /= sum(weights)
-    return WeightedParticleBelief(particles, weights)
-end
 
 @testset "domain_specific" begin
 
