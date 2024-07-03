@@ -59,7 +59,7 @@ function update(up::BasicParticleFilter, b::AbstractParticleBelief, a, o)
             up.reweight_model,
             b, a, o,
             up.rng)
-		num_particles = n_particles(resampled_particle_collection)
+        num_particles = n_particles(resampled_particle_collection)
         b = WeightedParticleBelief(resampled_particle_collection.particles, fill(1.0 / num_particles, num_particles))
     end
     resize!(pm, n_particles(b))
