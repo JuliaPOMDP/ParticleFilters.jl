@@ -3,7 +3,8 @@ using Documenter, ParticleFilters, POMDPs, PlutoSliderServer
 makedocs(
     modules=[ParticleFilters, POMDPs],
     format=Documenter.HTML(),
-    sitename="ParticleFilters.jl"
+    sitename="ParticleFilters.jl",
+    warnonly = [:missing_docs, :cross_references]
 )
 
 PlutoSliderServer.export_directory(

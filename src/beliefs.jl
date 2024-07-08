@@ -86,7 +86,7 @@ mutable struct ParticleCollection{T} <: AbstractParticleBelief{T}
     _probs::Union{Nothing, Dict{T,Float64}} # a cache for the probabilities
 
     ParticleCollection{T}() where {T} = new(T[], nothing)
-    ParticleCollection{T}(particles) where {T} = new(particles, Dict{T,Float64}())
+    ParticleCollection{T}(particles) where {T} = new(particles, nothing)
     ParticleCollection{T}(particles, _probs) where {T} = new(particles, _probs)
 end
 ParticleCollection(p::AbstractVector{T}) where T = ParticleCollection{T}(p, nothing)

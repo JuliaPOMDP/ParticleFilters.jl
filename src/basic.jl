@@ -8,14 +8,13 @@ Construct a basic particle filter with three steps: predict, reweight, and resam
 
 In the second constructor, `model` is used for both the prediction and reweighting.
 """
-mutable struct BasicParticleFilter{PM,RM,RS,RNG<:AbstractRNG,PMEM} <: Updater
-    predict_model::PM
-    reweight_model::RM
-    resampler::RS
+mutable struct BasicParticleFilter{RS,PR,RW,PR,RNG<:AbstractRNG,PMEM} <: Updater
+    resample::RS
+    predict::PRE
+    reweight::RW
+    propose::PRO
     n_init::Int
     rng::RNG
-    _particle_memory::PMEM
-    _weight_memory::Vector{Float64}
 end
 
 ## Constructors ##
@@ -44,19 +43,11 @@ This should usually be an empty `Vector{S}` where `S` is the type of the state f
 function particle_memory end
 
 function update(up::BasicParticleFilter, b::ParticleCollection, a, o)
-    pm = up._particle_memory
-    wm = up._weight_memory
-    resize!(pm, n_particles(b))
-    resize!(wm, n_particles(b))
-    predict!(pm, up.predict_model, b, a, o, up.rng)
-    reweight!(wm, up.reweight_model, b, a, pm, o, up.rng)
-
-    return resample(up.resampler,
-                    WeightedParticleBelief(pm, wm, sum(wm), nothing),
-                    up.predict_model,
-                    up.reweight_model,
-                    b, a, o,
-                    up.rng)
+    b = up.resample(b, a, o, up.rng)
+    particles = up.predict(b, a, o, up.rng)
+    weights = up.reweight(b, a, pm, o)
+    bp = up.propose(particles, weights, b, a, o, up.rng)
+    return bp
 end
 
 function Random.seed!(f::BasicParticleFilter, seed)
