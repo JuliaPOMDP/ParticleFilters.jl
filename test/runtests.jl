@@ -75,7 +75,8 @@ POMDPs.transition(::TerminalPOMDP, s, a) = Deterministic(s + a)
     pomdp = TerminalPOMDP()
     pf = BootstrapFilter(pomdp, 100)
     bp = update(pf, initialize_belief(pf, Categorical([0.5, 0.5])), -1, 1.0)
-    @test abs(mean(bp) - 1.0) < 1e-5
+    @test bp isa WeightedParticleBelief{Int64}
+    @test all(bp.particles[i] == 1 for i in eachindex(bp.weights) if bp.weights[i] != 0)
 end
 
 @testset "alpha" begin

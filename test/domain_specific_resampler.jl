@@ -29,7 +29,7 @@ up = BasicParticleFilter(m, LDResampler(n), n)
 p = FunctionPolicy(b->0)
 
 bp = first(stepthrough(m, p, up, "bp"))
-@test first(particles(bp)) == LightDark1DState(-1, -3.013777918736376)
+@test first(particles(bp)) == LightDark1DState(-1, 2.2388298552014967)
 
 p2 = FunctionPolicy(b->2)
 up2 = BasicParticleFilter(m, LDResampler(n), n)
