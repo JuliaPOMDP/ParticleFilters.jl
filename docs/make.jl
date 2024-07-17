@@ -14,6 +14,6 @@ PlutoSliderServer.export_directory(
 
 deploydocs(
     repo="github.com/JuliaPOMDP/ParticleFilters.jl.git",
-    target="build",
-    push_preview = true,
+    # target="build",
+    # push_preview = true,
 )
