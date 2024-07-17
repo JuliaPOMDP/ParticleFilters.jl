@@ -6,7 +6,6 @@ Random.gentype(::Type{B}) where B<:AbstractParticleBelief{T} where T = T
 ### Belief interface ###
 ########################
 
-# also rand(), pdf(), and mode() from POMDPs.jl are part of the belief interface.
 """
     n_particles(b::AbstractParticleBelief)
 
