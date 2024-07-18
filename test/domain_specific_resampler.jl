@@ -29,11 +29,12 @@ up = BasicParticleFilter(m, LDResampler(n), n)
 p = FunctionPolicy(b->0)
 
 bp = first(stepthrough(m, p, up, "bp"))
-@test first(particles(bp)) == LightDark1DState(-1, 0.0)
+@test first(particles(bp)) == LightDark1DState(-1, 2.2388298552014967)
 
 p2 = FunctionPolicy(b->2)
-for bp in stepthrough(m, p2, up, "bp", max_steps=3)
-    @test bp isa ParticleCollection{LightDark1DState}
+up2 = BasicParticleFilter(m, LDResampler(n), n)
+for bp in stepthrough(m, p2, up2, "bp", max_steps=3)
+    @test bp isa WeightedParticleBelief{LightDark1DState}
     @test n_particles(bp) == n
 end
 
