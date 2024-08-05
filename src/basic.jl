@@ -1,29 +1,27 @@
 ### Basic Particle Filter ###
-# implements the POMDPs.jl Updater interface
-
 
 """
-    BasicParticleFilter(resample, predict, reweight, [propose], [rng::AbstractRNG])
+    BasicParticleFilter
 """
-struct BasicParticleFilter{RS,PR,RW,PR,RNG<:AbstractRNG,PMEM} <: Updater
-    preprocess::RS
-    predict::PRE
-    reweight::RW
-    postprocess::PRO
+struct BasicParticleFilter{F1,F2,F3,F4,F5,RNG<:AbstractRNG} <: Updater
+    initialize::F1
+    preprocess::F2
+    predict::F3
+    reweight::F4
+    postprocess::F5
     rng::RNG
 end
 
-function BasicParticleFilter(resample, predict, reweight)
-    return BasicParticleFilter(resample, predict, reweight, propose, Random.TaskLocalRNG())
+function BasicParticleFilter(preprocess, predict, reweight)
+    return BasicParticleFilter(preprocess, predict, reweight, postprocess, Random.TaskLocalRNG())
 end
 
 function update(up::BasicParticleFilter, b::AbstractParticleBelief, a, o)
-    b_resampled = up.preprocess(b, a, o, up.rng)
-    ps = up.predict(b_resampled, a, o, up.rng)
-    ws = up.reweight(b_resampled, a, ps, o)
+    bb = up.preprocess(b, a, o, up.rng)
+    particles = up.predict(bb, a, o, up.rng)
+    weights = up.reweight(bb, a, particles, o)
     bp = WeightedParticleBelief(ps, ws)
-    new_belief = up.postprocess(bp, b, a, o, up.rng)
-    return new_belief
+    return up.postprocess(bp, b, a, o, up.rng)
 end
 
 function check_belief(b::AbstractParticleBelief)
