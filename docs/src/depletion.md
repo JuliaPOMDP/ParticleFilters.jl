@@ -1,5 +1,36 @@
 # Handling Particle Depletion
 
+```julia
+function replace_zero_weight_particles(bp::WeightedParticleBelief, b, a, o, rng)
+
+    n = n_particles(bp)
+    new_weight = weight_sum(bp)/n
+
+    for i in 1:n
+        if weight(bp, i) == 0.0
+            s = consistent_state(o, rng)
+            set_pair!(bp, s => new_weight)
+        end
+    end
+
+    return bp
+end
+```
+
+```julia
+function add_noise(bp, b, a, o, rng)
+    for i in 1:n_particles(bp)
+        particles(bp)[i] += consistent_noise(o, rng)
+    end
+    return bp
+end
+```
+
+```
+PostprocessChain(replace_zero_weight_particles, add_noise)
+```
+
+
 Many of the most common problems with particle filters are related to particle depletion, that is, a lack of particles corresponding to the true state. In many cases, it is not difficult to overcome these problems, but domain-specific heuristics are often more effective than generic approaches.
 
 The recommended first remedy for particle depletion is to write a custom domain-specific [resampler](@ref Resamplers) that injects new appropriate particles in the case of particle depletion. The particle depletion can be detected by observing low likelihood weights and handling it within the [`resample`](@ref) function.

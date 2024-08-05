@@ -1,43 +1,54 @@
-struct PredictModel{S, F}
-    f::F
+struct BasicPredictor{F<:Function} <: Function
+    dynamics::F
 end
 
-"""
-    PredictModel{S}(f::Function)
+BasicPredictor(m::ParticleFilterModel) = Predictor(m.f)
 
-Create a prediction model for use in a [`BasicParticleFilter`](@ref)
+# """
+#     Predictor(f::Function)
+# 
+# Create a prediction model for use in a [`BasicParticleFilter`](@ref)
+# 
+# See [`ParticleFilterModel`](@ref) 
+# """
+# PredictModel{S}(f::F) where {S, F<:Function} = PredictModel{S, F}(f)
 
-See [`ParticleFilterModel`](@ref) for descriptions of `S` and `f`.
-"""
-PredictModel{S}(f::F) where {S, F<:Function} = PredictModel{S, F}(f)
+# function predict(pm, m::PredictModel, b, u, rng)
+(p::Predictor)(b, u, y, rng) = map(x -> m.dynamics(x, u, rng), particles(b))
 
-function predict!(pm, m::PredictModel, b, u, rng)
-    for i in 1:n_particles(b)
+struct BasicReweighter{G<:Function} <: Function
+    reweight::G
+end
+
+BasicReweighter(m::ParticleFilterModel) = Reweighter(m.g)
+
+function (r::BasicReweighter)(b, u, ps, y)
+    map(1:length(ps)) do i
         x1 = particle(b, i)
-        pm[i] = m.f(x1, u, rng)
+        x2 = ps[i]
+        r.reweight(x1, u, x2, y)
     end
 end
 
-particle_memory(m::PredictModel{S}) where S = S[]
 
-"""
-    ReweightModel(g::Function)
-
-Create a reweighting model for us in a [`BasicParticleFilter`](@ref).
-
-See [`ParticleFilterModel`](@ref) for a description of `g`.
-"""
-struct ReweightModel{G}
-    g::G
-end
-
-function reweight!(wm, m::ReweightModel, b, u, pm, y)
-    for i in 1:n_particles(b)
-        x1 = particle(b, i)
-        x2 = pm[i]
-        wm[i] = m.g(x1, u, x2, y)
-    end
-end
+# """
+#     ReweightModel(g::Function)
+# 
+# Create a reweighting model for us in a [`BasicParticleFilter`](@ref).
+# 
+# See [`ParticleFilterModel`](@ref) for a description of `g`.
+# """
+# struct ReweightModel{G}
+#     g::G
+# end
+# 
+# function reweight!(wm, m::ReweightModel, b, u, pm, y)
+#     for i in 1:n_particles(b)
+#         x1 = particle(b, i)
+#         x2 = pm[i]
+#         wm[i] = m.g(x1, u, x2, y)
+#     end
+# end
 
 struct ParticleFilterModel{S, F, G}
     f::F

@@ -53,7 +53,7 @@ struct LowVarianceResampler
     n::Int
 end
 
-function resample(re::LowVarianceResampler, b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
+function (re::LowVarianceResampler)(b::AbstractParticleBelief{S}, rng::AbstractRNG) where {S}
     ps = Array{S}(undef, re.n)
     r = rand(rng)*weight_sum(b)/re.n
     c = weight(b,1)
@@ -79,5 +79,3 @@ function resample(re::LowVarianceResampler, b::ParticleCollection{S}, rng::Abstr
 end
 
 n_init_samples(r::Union{LowVarianceResampler, ImportanceResampler}) = r.n
-
-resample(f::Function, d::Any, rng::AbstractRNG) = f(d, rng)

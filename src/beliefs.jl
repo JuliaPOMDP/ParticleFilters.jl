@@ -56,6 +56,29 @@ Return particle i.
 """
 function particle end
 
+
+"""
+    set_particle!(b::AbstractParticleBelief, i, s)
+
+Change the particle at index i without changing the weight.
+
+This may not work for beliefs with immutable particle storage.
+"""
+function set_particle! end
+
+"""
+    set_pair!(b::AbstractParticleBelief{S}, i, sw::Pair{S,Float64})
+
+Change both the particle and weight at index i. This will also adjust the weight sum appropriately.
+"""
+function set_pair! end
+
+"""
+    push_pair!(b::AbstractParticleBelief{S}, sw::Pair{S,Float64})
+
+"""
+function push_pair! end
+
 """
     probdict(b::AbstractParticleBelief)
 
@@ -120,7 +143,7 @@ mutable struct WeightedParticleBelief{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
     weights::Vector{Float64}
     weight_sum::Float64
-    _probs::Union{Nothing, Dict{T,Float64}} # this is not used now, but may be later
+    _probs::Union{Nothing, Dict{T,Float64}}
 end
 WeightedParticleBelief(particles::AbstractVector{T}, weights::AbstractVector, weight_sum=sum(weights)) where {T} = WeightedParticleBelief{T}(particles, weights, weight_sum, nothing)
 

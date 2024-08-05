@@ -1,16 +1,15 @@
 ### Basic Particle Filter ###
 # implements the POMDPs.jl Updater interface
+
+
 """
     BasicParticleFilter(resample, predict, reweight, [propose], [rng::AbstractRNG])
-
-In the second constructor, `model` is used for both the prediction and reweighting.
 """
-mutable struct BasicParticleFilter{RS,PR,RW,PR,RNG<:AbstractRNG,PMEM} <: Updater
-    resample::RS
+struct BasicParticleFilter{RS,PR,RW,PR,RNG<:AbstractRNG,PMEM} <: Updater
+    preprocess::RS
     predict::PRE
     reweight::RW
-    propose::PRO
-    check_belief::Bool
+    postprocess::PRO
     rng::RNG
 end
 
@@ -19,16 +18,11 @@ function BasicParticleFilter(resample, predict, reweight)
 end
 
 function update(up::BasicParticleFilter, b::AbstractParticleBelief, a, o)
-    b_resampled = up.resample(b, a, o, up.rng)
-    particles = up.predict(b_resampled, a, o, up.rng)
-    weights = up.reweight(b_resampled, particles, a, o)
-    bp = WeightedParticleBelief(particles, weights)
-    new_belief = up.propose(bp, b, a, o, up.rng)
-
-    if up.check_belief
-        check_belief(new_belief)
-    end
-
+    b_resampled = up.preprocess(b, a, o, up.rng)
+    ps = up.predict(b_resampled, a, o, up.rng)
+    ws = up.reweight(b_resampled, a, ps, o)
+    bp = WeightedParticleBelief(ps, ws)
+    new_belief = up.postprocess(bp, b, a, o, up.rng)
     return new_belief
 end
 
@@ -48,5 +42,3 @@ function Random.seed!(f::BasicParticleFilter, seed)
     Random.seed!(f.rng, seed)
     return f
 end
-
-
