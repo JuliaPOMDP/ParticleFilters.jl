@@ -73,6 +73,7 @@ Change both the particle and weight at index i. This will also adjust the weight
 """
 function set_pair! end
 
+# TODO: document
 """
     push_pair!(b::AbstractParticleBelief{S}, sw::Pair{S,Float64})
 
@@ -120,6 +121,41 @@ weighted_particles(p::ParticleCollection) = (s=>1.0 for s in p.particles)
 weight_sum(b::ParticleCollection) = n_particles(b)
 weight(b::ParticleCollection, i::Int) = 1.0
 particle(b::ParticleCollection, i::Int) = b.particles[i]
+
+function set_particle!(b::ParticleCollection, i, s)
+    b.particles[i] = s
+end
+
+function set_pair!(b::ParticleCollection, i, sw)
+    @assert isapprox(last(sw), 1.0)
+    new = first(sw)
+    old = particle(b, i)
+    b.particles[i] = new
+    if !isnothing(b._probs)
+        fraction = 1/n_particles(b)
+        b._probs[old] -= fraction
+        b._probs[new] = get(b._probs, new, 0.0) + fraction
+    end
+    return sw
+end
+
+function push_pair!(b::ParticleCollection, sw)
+    @assert isapprox(last(sw), 1.0)
+    new = first(sw)
+    push!(b.particles, new)
+    if !isnothing(b._probs)
+        # the probabilities of all other states get "taxed" to pay for the new state
+        fraction_kept_after_tax = (n_particles(b) - 1) / n_particles(b)
+        for (s, p) in b._probs
+            b._probs[s] = p * fraction_kept_after_tax
+        end
+        fraction = 1/n_particles(b)
+        b._probs[new] = get(b._probs, new, 0.0) + fraction
+        # TODO make sure to test that these updates are consistent (i.e. the probabilities sum to 1)
+    end
+    return b
+end
+
 rand(rng::AbstractRNG, sampler::Random.SamplerTrivial{<:ParticleCollection}) = sampler[].particles[rand(rng, 1:length(sampler[].particles))]
 support(b::ParticleCollection) = unique(particles(b))
 Statistics.mean(b::ParticleCollection) = sum(b.particles) / length(b.particles)
@@ -154,6 +190,35 @@ weight_sum(b::WeightedParticleBelief) = b.weight_sum
 weight(b::WeightedParticleBelief, i::Int) = b.weights[i]
 particle(b::WeightedParticleBelief, i::Int) = b.particles[i]
 weights(b::WeightedParticleBelief) = b.weights
+
+function set_particle!(b::ParticleCollection, i, s)
+    b.particles[i] = s
+end
+
+function set_pair!(b::ParticleCollection, i, sw)
+    w = last(sw)
+    s = first(sw)
+    b.particles[i] = s
+    old_sum = b.weight_sum
+    weight_difference = w - b.weights[i]
+    b.weight_sum += weight_difference
+    b.weights[i] = w
+    # XXX _probs
+    if !isnothing(b._probs)
+        fraction = w / weight_sum(b)
+        b._probs[particle(b, i)] -= fraction
+        b._probs[s] = get(b._probs, s, 0.0) + fraction
+    end
+    return sw
+end
+
+function push_pair!(b::ParticleCollection, sw)
+    push!(b.particles, first(sw))
+    push!(b.weights, last(sw))
+    # XXX _probs
+    return b
+end
+
 
 function Random.rand(rng::AbstractRNG, sampler::Random.SamplerTrivial{<:WeightedParticleBelief})
     b = sampler[]
