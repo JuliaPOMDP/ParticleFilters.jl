@@ -2,7 +2,7 @@ struct BasicPredictor{F<:Function} <: Function
     dynamics::F
 end
 
-BasicPredictor(m::ParticleFilterModel) = Predictor(m.f)
+BasicPredictor(m::ParticleFilterModel) = BasicPredictor(m.f)
 
 # """
 #     Predictor(f::Function)
@@ -14,7 +14,7 @@ BasicPredictor(m::ParticleFilterModel) = Predictor(m.f)
 # PredictModel{S}(f::F) where {S, F<:Function} = PredictModel{S, F}(f)
 
 # function predict(pm, m::PredictModel, b, u, rng)
-(p::Predictor)(b, u, y, rng) = map(x -> m.dynamics(x, u, rng), particles(b))
+(p::BasicPredictor)(b, u, y, rng) = map(x -> p.dynamics(x, u, rng), particles(b))
 
 struct BasicReweighter{G<:Function} <: Function
     reweight::G
@@ -54,6 +54,9 @@ struct ParticleFilterModel{S, F, G}
     f::F
     g::G
 end
+
+
+# TODO (?) Deprecate ParticleFilterModel
 
 """
     ParticleFilterModel{S}(f, g)

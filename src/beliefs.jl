@@ -191,31 +191,32 @@ weight(b::WeightedParticleBelief, i::Int) = b.weights[i]
 particle(b::WeightedParticleBelief, i::Int) = b.particles[i]
 weights(b::WeightedParticleBelief) = b.weights
 
-function set_particle!(b::ParticleCollection, i, s)
+function set_particle!(b::WeightedParticleBelief, i, s)
     b.particles[i] = s
 end
 
-function set_pair!(b::ParticleCollection, i, sw)
+function set_pair!(b::WeightedParticleBelief, i, sw)
     w = last(sw)
     s = first(sw)
+    if !isnothing(b._probs)
+        b._probs[particle(b, i)] -= weight(b, i)/weight_sum(b)
+    end
     b.particles[i] = s
-    old_sum = b.weight_sum
     weight_difference = w - b.weights[i]
     b.weight_sum += weight_difference
     b.weights[i] = w
-    # XXX _probs
     if !isnothing(b._probs)
         fraction = w / weight_sum(b)
-        b._probs[particle(b, i)] -= fraction
         b._probs[s] = get(b._probs, s, 0.0) + fraction
     end
     return sw
 end
 
-function push_pair!(b::ParticleCollection, sw)
+function push_pair!(b::WeightedParticleBelief, sw)
     push!(b.particles, first(sw))
     push!(b.weights, last(sw))
     # XXX _probs
+    b._probs = nothing # invalidate _probs cache
     return b
 end
 

@@ -14,22 +14,22 @@ TODO: update with ess
 
 For a more flexible particle filter structure see [`BasicParticleFilter`](@ref).
 """
-function BootstrapFilter(m::POMDP, n::Int, normalized_ess::Float64, postprocess, rng::AbstractRNG=Random.TaskLocalRNG())
+function BootstrapFilter(m::POMDP, n::Int, resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.TaskLocalRNG())
     return BasicParticleFilter(
-        NormalizedESSConditional(LowVarianceResampler(n), normalized_ess),
+        NormalizedESSConditionalResample(LowVarianceResampler(n), normalized_ess),
         POMDPPredictor(m),
         POMDPReweighter(m),
-        postprocess,
+        PostprocessChain(postprocess, check_particle_belief),
         rng
     )
 end
 
-function BootstrapFilter(m::ParticleFilterModel, n::Int, normalized_ess, rng::AbstractRNG=Random.TaskLocalRNG())
+function BootstrapFilter(m::ParticleFilterModel, n::Int, resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.TaskLocalRNG())
     return BasicParticleFilter(
-        NormalizedESSConditional(LowVarianceResampler(n), normalized_ess),
+        NormalizedESSConditionalResample(LowVarianceResampler(n), normalized_ess),
         BasicPredictor(m),
         BasicReweighter(m),
-        check_weights_positive,
+        PostprocessChain(postprocess, check_particle_belief),
         rng
     )
 end
