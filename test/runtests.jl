@@ -7,6 +7,8 @@ using POMDPTools
 using Random
 using Distributions
 
+# TODO: test BootstrapFilter(pomdp, n, rng)
+
 struct P <: POMDP{Nothing,Nothing,Nothing} end
 ParticleFilters.obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing) = 1.0
 
@@ -16,7 +18,7 @@ ParticleFilters.obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing) = 1.
 end
 
 include("example.jl")
-include("domain_specific_resampler.jl")
+# include("domain_specific_resampler.jl")
 include("beliefs.jl")
 
 struct ContinuousPOMDP <: POMDP{Float64,Float64,Float64} end
@@ -32,20 +34,23 @@ struct ContinuousPOMDP <: POMDP{Float64,Float64,Float64} end
         @inferred weighted_particles(b)
     end
     @testset "lowvar" begin
+        @inferred low_variance_resample(b, 100, Random.default_rng())
+        @test all(s in support(b) for s in low_variance_resample(b, 100, Random.default_rng()))
+
         rs = LowVarianceResampler(1000)
-        @inferred resample(rs, b, MersenneTwister(3))
+        @inferred rs(b, TIGER_LISTEN, true, MersenneTwister(3))
+
         ps = particles(b)
         ws = ones(length(ps))
-        @inferred resample(rs, WeightedParticleBelief(ps, ws, sum(ws)), MersenneTwister(3))
-        @inferred resample(rs, WeightedParticleBelief{Bool}(ps, ws, sum(ws), nothing), MersenneTwister(3))
+        @inferred low_variance_resample(WeightedParticleBelief(ps, ws, sum(ws)), 100, MersenneTwister(3))
+        @inferred low_variance_resample(WeightedParticleBelief{Bool}(ps, ws, sum(ws), nothing), 100, MersenneTwister(3))
     end
     # test that the special method for ParticleCollections works
     @testset "collection" begin
-        rs = LowVarianceResampler(1000)
-        b = ParticleCollection(1:1000)
-        rb1 = @inferred resample(rs, b, MersenneTwister(3))
-        rb2 = @inferred resample(rs, WeightedParticleBelief(particles(b), ones(n_particles(b))), MersenneTwister(3))
-        @test all(particles(rb1) .== particles(rb2))
+        b = ParticleCollection(1:100)
+        rb1 = @inferred low_variance_resample(b, 100, MersenneTwister(3))
+        rb2 = @inferred low_variance_resample(WeightedParticleBelief(particles(b), ones(n_particles(b))), 100, MersenneTwister(3))
+        @test all(rb1 .== rb2)
     end
 
     @testset "unweighted" begin

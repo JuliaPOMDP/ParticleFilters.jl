@@ -7,12 +7,15 @@ function check_particle_belief(b::AbstractParticleBelief)
     if weight_sum(b) <= 0.0
         @warn "Sum of particle filter weights is not greater than zero." weight_sum(b)
     end
-    if sum(weights(b)) !≈ weight_sum(b)
+    if !(sum(weights(b)) ≈ weight_sum(b))
         @warn "Sum of particle filter weights does not match weight_sum." sum(weights(b)) weight_sum(b)
     end
 end
 
-check_particle_belief(bp, args...) = check_belief(bp) && return bp
+function check_particle_belief(bp, args...)
+    check_particle_belief(bp)
+    return bp
+end
 
 struct ReplaceWithInitial{M <: POMDP} <: Function
     threshold::Float64

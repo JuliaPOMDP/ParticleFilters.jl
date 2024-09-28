@@ -18,6 +18,8 @@ using POMDPTools.ModelTools: weighted_iterator
 import Random: rand, gentype
 import Statistics: mean, cov, var
 
+# TODO cleanup export
+
 export
     AbstractParticleBelief,
     ParticleCollection,
@@ -27,17 +29,17 @@ export
     LowVarianceResampler,
     UnweightedParticleFilter,
     ParticleFilterModel,
-    PredictModel,
-    BootstrapFilter,
-    ReweightModel
+#     PredictModel,
+    BootstrapFilter
+#     ReweightModel
 
-export
-    resample,
-    predict,
-    predict!,
-    reweight,
-    reweight!,
-    particle_memory
+# export
+#     resample,
+#     predict,
+#     predict!,
+#     reweight,
+#     reweight!,
+#     particle_memory
 
 export
     n_particles,
@@ -47,8 +49,10 @@ export
     weight,
     particle,
     weights,
-    obs_weight,
-    n_init_samples,
+    obs_weight
+#     n_init_samples,
+
+export
     runfilter
 
 export
@@ -64,9 +68,15 @@ export
 
 include("beliefs.jl")
 include("basic.jl")
+
+export
+    low_variance_resample
+
 include("resamplers.jl")
+
 include("unweighted.jl")
 include("models.jl")
+include("postprocessing.jl")
 include("bootstrap.jl")
 include("pomdps.jl")
 include("policies.jl")

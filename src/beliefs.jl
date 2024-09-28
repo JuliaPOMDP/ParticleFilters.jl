@@ -91,6 +91,11 @@ For ParticleCollection and WeightedParticleBelief, the result is cached for effi
 """
 function probdict end
 
+# TODO: document, export, and test
+function effective_sample_size(b::AbstractParticleBelief)
+    ws = weight_sum(b)
+    return 1.0 / sum(w->(w/ws)^2, weights(b))
+end
 
 #############################
 ### Concrete Belief types ###
@@ -181,7 +186,12 @@ mutable struct WeightedParticleBelief{T} <: AbstractParticleBelief{T}
     weight_sum::Float64
     _probs::Union{Nothing, Dict{T,Float64}}
 end
-WeightedParticleBelief(particles::AbstractVector{T}, weights::AbstractVector, weight_sum=sum(weights)) where {T} = WeightedParticleBelief{T}(particles, weights, weight_sum, nothing)
+
+function WeightedParticleBelief(particles::AbstractVector{T},
+                                weights::AbstractVector=ones(length(particles)),
+                                weight_sum=sum(weights)) where {T}
+    return WeightedParticleBelief{T}(particles, weights, weight_sum, nothing)
+end
 
 n_particles(b::WeightedParticleBelief) = length(b.particles)
 particles(p::WeightedParticleBelief) = p.particles
