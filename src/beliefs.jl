@@ -103,6 +103,14 @@ function effective_sample_size(b::AbstractParticleBelief)
     return 1.0 / sum(w->(w/ws)^2, weights(b))
 end
 
+"""
+    low_variance_sample(b::AbstractParticleBelief, n[, rng])
+
+Sample n particles according to their weights using the "low variance" sampling algorithm on page 110 of Probabilistic Robotics by Thrun Burgard and Fox. O(n) runtime, correlated samples, but produces a useful low-variance set.
+"""
+function low_variance_sample end
+
+
 #############################
 ### Concrete Belief types ###
 #############################
@@ -177,6 +185,13 @@ end
 function Statistics.cov(b::ParticleCollection{T}) where {T <: Vector} # uncorrected covariance
     centralized = reduce(hcat, b.particles) .- mean(b)
     centralized * centralized' / length(b.particles) # outer product
+end
+
+function low_variance_sample(b::ParticleCollection, n::Int, rng::AbstractRNG=Random.default_rng())
+    r = rand(rng)*n_particles(b)/n
+    chunk = n_particles(b)/n
+    inds = ceil.(Int, chunk*(0:n-1).+r)
+    return particles(b)[inds]
 end
 
 ## Weighted ##
@@ -257,6 +272,23 @@ end
 function Statistics.cov(b::WeightedParticleBelief{T}) where {T <: Vector} # uncorrected covariance
     centralized = reduce(hcat, b.particles) .- mean(b)
     (centralized .* b.weights') * centralized' / weight_sum(b)
+end
+
+function low_variance_sample(b::AbstractParticleBelief, n::Int, rng::AbstractRNG=Random.default_rng())
+    ps = Array{gentype(b)}(undef, n)
+    r = rand(rng)*weight_sum(b)/n
+    c = weight(b,1)
+    i = 1
+    U = r
+    for m in 1:n
+        while U > c && i < n_particles(b)
+            i += 1
+            c += weight(b, i)
+        end
+        U += weight_sum(b)/n
+        ps[m] = particles(b)[i]
+    end
+    return ps
 end
 
 ### Shared implementations ###

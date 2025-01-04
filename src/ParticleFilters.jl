@@ -49,7 +49,13 @@ export
     weight,
     particle,
     weights,
-    obs_weight
+    obs_weight,
+    set_particle!,
+    set_pair!,
+    push_pair!,
+    effective_sample_size,
+    low_variance_sample,
+    
 #     n_init_samples,
 
 export
