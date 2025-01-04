@@ -22,7 +22,6 @@ A more flexible structure for building a particle filter is the [`BasicParticleF
 ## Docstrings
 
 ```@docs
-BootstrapFilter
 BasicParticleFilter
 update
 ```

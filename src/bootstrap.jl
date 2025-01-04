@@ -1,23 +1,24 @@
 """
-    BootstrapFilter(model, n, [rng])
+    BootstrapFilter(pomdp, n; <keyword arguments>)
+    BootstrapFilter(dynamics, likelihood, n; <keyword arguments>)
 
 Construct a standard bootstrap particle filter.
 
-The Bootstrap filter was first described in Gordon, N. J., Salmond, D. J., & Smith, A. F. M. "Novel approach to nonlinear / non-Gaussian Bayesian state estimation", with the added robustness of the LowVarianceResampler.
-
-TODO: update with ess
-
 # Arguments
-- `model`: a model for the prediction dynamics and likelihood reweighing, for example a `POMDP` or `ParticleFilterModel`
+- `pomdp::POMDP`
+- `dynamics::Function`
+- `likelihood::Function`
 - `n::Integer`: number of particles
 
 # Keyword Arguments
 - `resample_threshold::Float64=0.9`: normalized ESS threshold for resampling
-- `postprocess::Function`: a function to apply to the belief after each step
-- `rng::AbstractRNG`: random number generator
+- `postprocess::Function=(bp, args...)->bp`: a function to apply to the belief at the end of each update step. This function should have the form `postprocess(bp, b, a, o, rng)` and should return a modified version of `bp` with any postprocessing changes made. See the Particle Depletion section of the ParticleFilters.jl documentation for more information.
+- `rng::AbstractRNG=Random.default_rng()`: random number generator
 
-For a more flexible particle filter structure see [`BasicParticleFilter`](@ref).
+For more explanation, see the Bootstrap Filter section of the ParticleFilters.jl package documentation. For a more flexible particle filter structure see [`BasicParticleFilter`](@ref).
 """
+function BootstrapFilter end # for docs
+
 function BootstrapFilter(m::POMDP, n::Int; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng())
     return BasicParticleFilter(
         NormalizedESSConditionalResampler(LowVarianceResampler(n), resample_threshold),
@@ -25,7 +26,6 @@ function BootstrapFilter(m::POMDP, n::Int; resample_threshold=0.9, postprocess=(
         POMDPReweighter(m),
         PostprocessChain(postprocess, check_particle_belief),
         initialize=(d, rng)->initialize_to(WeightedParticleBelief, n, d, rng),
-        # initialize=(d, rng)->WeightedParticleBelief(rand(rng, d, n), fill(1.0/n, n)),
         rng=rng
     )
 end

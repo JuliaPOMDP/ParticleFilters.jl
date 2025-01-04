@@ -91,7 +91,13 @@ For ParticleCollection and WeightedParticleBelief, the result is cached for effi
 """
 function probdict end
 
-# TODO: document, export, and test
+"""
+    effective_sample_size(b::AbstractParticleBelief)
+
+Calculate the effective sample size of a particle belief.
+
+The effective sample size is ``1/\\sum_i \\hat{w}_i^2`` where ``\\hat{w}_i = w_i / \\sum_i w_i``.
+"""
 function effective_sample_size(b::AbstractParticleBelief)
     ws = weight_sum(b)
     return 1.0 / sum(w->(w/ws)^2, weights(b))
