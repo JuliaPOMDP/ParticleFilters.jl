@@ -230,7 +230,7 @@ function push_pair!(b::WeightedParticleBelief, sw)
     return b
 end
 
-
+# XXX there should be a version that uses an alias table
 function Random.rand(rng::AbstractRNG, sampler::Random.SamplerTrivial{<:WeightedParticleBelief})
     b = sampler[]
     t = rand(rng) * weight_sum(b)

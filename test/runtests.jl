@@ -6,6 +6,9 @@ using Test
 using POMDPTools
 using Random
 using Distributions
+using Documenter # for doctest
+
+doctest(ParticleFilters)
 
 # TODO: test BootstrapFilter(pomdp, n, rng)
 
@@ -121,3 +124,5 @@ cd("../notebooks/") do
         end
     end
 end
+
+

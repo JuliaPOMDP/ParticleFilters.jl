@@ -6,27 +6,9 @@ In particular it provides both weighted and unweighted [particle belief types](@
 
 Additionally, an important requirement for a particle filter is efficient resampling. This package provides O(n) [resamplers](@ref Resamplers).
 
-Dynamics and measurement models for the filters can be specified as a [`ParticleFilterModel`](@ref) or a [`POMDP`](https://github.com/JuliaPOMDP/POMDPs.jl) or a custom user-defined type.
+Dynamics and measurement models for the filters can be specified with a few functions or a [`POMDP`](https://github.com/JuliaPOMDP/POMDPs.jl).
 
 The simplest Bootstrap Particle filter can be constructed with [`BootstrapFilter`](@ref). [`BasicParticleFilter`](@ref) provides a more flexible structure.
-
-Basic setup of a model is as follows:
-```julia
-using ParticleFilters, Distributions
-
-dynamics(x, u, rng) = x + u + randn(rng)
-y_likelihood(x_previous, u, x, y) = pdf(Normal(), y - x)
-model = ParticleFilterModel{Float64}(dynamics, y_likelihood)
-pf = BootstrapFilter(model, 10)
-```
-Then the [`update`](@ref) function can be used to perform a particle filter update.
-```julia
-b = ParticleCollection([1.0, 2.0, 3.0, 4.0])
-u = 1.0
-y = 3.0
-
-b_new = update(pf, b, u, y)
-```
 
 There are [tutorials](/notebooks) for three ways to use the particle filters:
 1. As an [estimator for feedback control](notebooks/Using-a-Particle-Filter-for-Feedback-Control.html),

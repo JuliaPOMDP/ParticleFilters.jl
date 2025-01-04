@@ -1,5 +1,7 @@
 # Basic Particle Filter
 
+The 
+
 ## Update Steps
 
 The basic particle filtering step in ParticleFilters.jl is implemented in the [`update`](@ref) function, and consists of three steps:
@@ -16,9 +18,6 @@ A more flexible structure for building a particle filter is the [`BasicParticleF
 2. The `reweight_model` controls reweighting through [`reweight!`](@ref)
 3. The `resampler` controls resampling through [`resample`](@ref)
 
-ParticleFilters.jl contains implementations of these components that can be mixed and matched. In many cases the prediction and reweighting steps use the same model, for example a [`ParticleFilterModel`](@ref) or a [`POMDP`](https://github.com/JuliaPOMDP/POMDPs.jl).
-
-To carry out the steps individually without the need for pre-allocating memory or doing a full [`update`](@ref) step, the [`predict`](@ref), [`reweight`](@ref), and [`resample`](@ref) functions are provided.
 
 ## Docstrings
 
@@ -26,10 +25,4 @@ To carry out the steps individually without the need for pre-allocating memory o
 BootstrapFilter
 BasicParticleFilter
 update
-predict!
-reweight!
-resample
-predict
-reweight
-particle_memory
 ```

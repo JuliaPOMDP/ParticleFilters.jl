@@ -25,7 +25,7 @@ function update(up::BasicParticleFilter, b::AbstractParticleBelief, a, o)
     particles = up.predict(bb, a, o, up.rng)
     weights = up.reweight(bb, a, particles, o)
     bp = WeightedParticleBelief(particles, weights)
-    return up.postprocess(bp, b, a, o, up.rng)
+    return up.postprocess(bp, b, a, o, up.rng) # TODO XXX should this also have bb as an arg?
 end
 
 function Random.seed!(f::BasicParticleFilter, seed)

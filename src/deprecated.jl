@@ -1,2 +1,12 @@
-@deprecate SIRParticleFilter(model, n::Int, rng::AbstractRNG) BootstrapFilter(model, n, rng)
-@deprecate SIRParticleFilter(model, n::Int; rng::AbstractRNG=Random.GLOBAL_RNG) BootstrapFilter(model, n, rng)
+function BootstrapFilter(m::ParticleFilterModel, n::Int; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng())
+    return BasicParticleFilter(
+        NormalizedESSConditionalResampler(LowVarianceResampler(n), resample_threshold),
+        BasicPredictor(m),
+        BasicReweighter(m),
+        PostprocessChain(postprocess, check_particle_belief),
+        initialize=(d, rng)->initialize_to(WeightedParticleBelief, n, d, rng),
+        rng=rng
+    )
+end
+
+

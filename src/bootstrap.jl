@@ -10,6 +10,10 @@ TODO: update with ess
 # Arguments
 - `model`: a model for the prediction dynamics and likelihood reweighing, for example a `POMDP` or `ParticleFilterModel`
 - `n::Integer`: number of particles
+
+# Keyword Arguments
+- `resample_threshold::Float64=0.9`: normalized ESS threshold for resampling
+- `postprocess::Function`: a function to apply to the belief after each step
 - `rng::AbstractRNG`: random number generator
 
 For a more flexible particle filter structure see [`BasicParticleFilter`](@ref).
@@ -26,11 +30,11 @@ function BootstrapFilter(m::POMDP, n::Int; resample_threshold=0.9, postprocess=(
     )
 end
 
-function BootstrapFilter(m::ParticleFilterModel, n::Int; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng())
+function BootstrapFilter(dynamics::Function, likelihood::Function, n::Int; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng())
     return BasicParticleFilter(
         NormalizedESSConditionalResampler(LowVarianceResampler(n), resample_threshold),
-        BasicPredictor(m),
-        BasicReweighter(m),
+        BasicPredictor(dynamics),
+        BasicReweighter(likelihood),
         PostprocessChain(postprocess, check_particle_belief),
         initialize=(d, rng)->initialize_to(WeightedParticleBelief, n, d, rng),
         rng=rng
