@@ -206,12 +206,13 @@ mutable struct WeightedParticleBelief{T} <: AbstractParticleBelief{T}
     weights::Vector{Float64}
     weight_sum::Float64
     _probs::Union{Nothing, Dict{T,Float64}}
+    _alias_table::Union{Nothing, AliasTable{UInt, Int}}
 end
 
 function WeightedParticleBelief(particles::AbstractVector{T},
                                 weights::AbstractVector=ones(length(particles)),
                                 weight_sum=sum(weights)) where {T}
-    return WeightedParticleBelief{T}(particles, weights, weight_sum, nothing)
+    return WeightedParticleBelief{T}(particles, weights, weight_sum, nothing, nothing)
 end
 
 n_particles(b::WeightedParticleBelief) = length(b.particles)
@@ -240,20 +241,37 @@ function set_pair!(b::WeightedParticleBelief, i, sw)
         fraction = w / weight_sum(b)
         b._probs[s] = get(b._probs, s, 0.0) + fraction
     end
+    b._alias_table = nothing # invalidate alias table
     return sw
 end
 
 function push_pair!(b::WeightedParticleBelief, sw)
     push!(b.particles, first(sw))
     push!(b.weights, last(sw))
-    # XXX _probs
-    b._probs = nothing # invalidate _probs cache
+    b._probs = nothing # invalidate _probs cache XXX this should be modified to update efficiently without throwing it away.
+    b._alias_table = nothing # invalidate alias table
     return b
 end
 
-# XXX there should be a version that uses an alias table
+# Made the decision for now to have this always use alias sampling because this is more efficient when many samples are drawn, and usually many samples will be drawn.
+# This should probably be upgraded to hook better into the Random API
+# https://docs.julialang.org/en/v1/stdlib/Random/#An-optimized-sampler-with-pre-computed-data
+# But many of the online solvers use rand(b) on every iteration. Perhaps they should be changed to use rand(b, number_of_samples) instead.
 function Random.rand(rng::AbstractRNG, sampler::Random.SamplerTrivial{<:WeightedParticleBelief})
     b = sampler[]
+    alias_single_sample(b, rng)
+end
+
+function alias_single_sample(b::WeightedParticleBelief, rng)
+    if b._alias_table == nothing
+        b._alias_table = AliasTable(b.weights)
+    end
+    at = b._alias_table::AliasTable{UInt, Int}
+
+    return b.particles[rand(rng, at)]
+end
+
+function naive_single_sample(b::WeightedParticleBelief, rng)
     t = rand(rng) * weight_sum(b)
     i = 1
     cw = b.weights[1]
@@ -263,6 +281,7 @@ function Random.rand(rng::AbstractRNG, sampler::Random.SamplerTrivial{<:Weighted
     end
     return particles(b)[i]
 end
+
 Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Number} = dot(b.weights, b.particles) / weight_sum(b)
 Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Vector} = reduce(hcat, b.particles) * b.weights / weight_sum(b)
 function Statistics.cov(b::WeightedParticleBelief{T}) where {T <: Number} # uncorrected covariance

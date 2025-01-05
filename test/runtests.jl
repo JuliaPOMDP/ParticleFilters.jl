@@ -37,22 +37,22 @@ struct ContinuousPOMDP <: POMDP{Float64,Float64,Float64} end
         @inferred weighted_particles(b)
     end
     @testset "lowvar" begin
-        @inferred low_variance_resample(b, 100, Random.default_rng())
-        @test all(s in support(b) for s in low_variance_resample(b, 100, Random.default_rng()))
+        @inferred low_variance_sample(b, 100, Random.default_rng())
+        @test all(s in support(b) for s in low_variance_sample(b, 100, Random.default_rng()))
 
         rs = LowVarianceResampler(1000)
         @inferred rs(b, TIGER_LISTEN, true, MersenneTwister(3))
 
         ps = particles(b)
         ws = ones(length(ps))
-        @inferred low_variance_resample(WeightedParticleBelief(ps, ws, sum(ws)), 100, MersenneTwister(3))
-        @inferred low_variance_resample(WeightedParticleBelief{Bool}(ps, ws, sum(ws), nothing), 100, MersenneTwister(3))
+        @inferred low_variance_sample(WeightedParticleBelief(ps, ws, sum(ws)), 100, MersenneTwister(3))
+        @inferred low_variance_sample(WeightedParticleBelief{Bool}(ps, ws, sum(ws), nothing, nothing), 100, MersenneTwister(3))
     end
     # test that the special method for ParticleCollections works
     @testset "collection" begin
         b = ParticleCollection(1:100)
-        rb1 = @inferred low_variance_resample(b, 100, MersenneTwister(3))
-        rb2 = @inferred low_variance_resample(WeightedParticleBelief(particles(b), ones(n_particles(b))), 100, MersenneTwister(3))
+        rb1 = @inferred low_variance_sample(b, 100, MersenneTwister(3))
+        rb2 = @inferred low_variance_sample(WeightedParticleBelief(particles(b), ones(n_particles(b))), 100, MersenneTwister(3))
         @test all(rb1 .== rb2)
     end
 

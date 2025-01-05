@@ -9,7 +9,7 @@ function BootstrapFilter(m::ParticleFilterModel, n::Int; resample_threshold=0.9,
     )
 end
 
-@deprecate low_variance_resample(b::AbstractParticleBelief, n::Int, rng::AbstractRNG) = low_variance_sample(b, n, rng)
+@deprecate low_variance_resample(b::AbstractParticleBelief, n::Int, rng::AbstractRNG) low_variance_sample(b, n, rng)
 
 struct LowVarianceResampler <: Function
     n::Int

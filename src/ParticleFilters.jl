@@ -18,6 +18,8 @@ using POMDPTools.ModelTools: weighted_iterator
 import Random: rand, gentype
 import Statistics: mean, cov, var
 
+using AliasTables: AliasTable
+
 # TODO cleanup export
 
 export
@@ -54,7 +56,7 @@ export
     set_pair!,
     push_pair!,
     effective_sample_size,
-    low_variance_sample,
+    low_variance_sample
     
 #     n_init_samples,
 
