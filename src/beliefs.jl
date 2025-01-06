@@ -63,13 +63,30 @@ function particle end
 Change the particle at index i without changing the weight.
 
 This may not work for beliefs with immutable particle storage.
+
+# Example
+```julia
+set_particle!(b, 3, s)
+```
 """
 function set_particle! end
+
+"""
+    set_weight!(b::AbstractParticleBelief, i, w)
+
+Change the weight at index i without changing the particle.
+"""
+function set_weight! end
 
 """
     set_pair!(b::AbstractParticleBelief{S}, i, sw::Pair{S,Float64})
 
 Change both the particle and weight at index i. This will also adjust the weight sum appropriately.
+
+# Example
+```julia
+set_pair!(b, 3, s=>0.5)
+```
 """
 function set_pair! end
 
@@ -145,6 +162,10 @@ function set_particle!(b::ParticleCollection, i, s)
     b.particles[i] = s
 end
 
+function set_weight!(b::ParticleCollection, i, w)
+    @assert isapprox(w, 1.0)
+end
+
 function set_pair!(b::ParticleCollection, i, sw)
     @assert isapprox(last(sw), 1.0)
     new = first(sw)
@@ -194,12 +215,16 @@ function low_variance_sample(b::ParticleCollection, n::Int, rng::AbstractRNG=Ran
     return particles(b)[inds]
 end
 
+effective_sample_size(b::ParticleCollection) = n_particles(b)
+
 ## Weighted ##
 
 """
     WeightedParticleBelief{S}
 
 Weighted particle belief consisting of particles of type `S` and their associated weights.
+
+An alias table is used for efficient sampling.
 """
 mutable struct WeightedParticleBelief{T} <: AbstractParticleBelief{T}
     particles::Vector{T}
@@ -227,6 +252,14 @@ function set_particle!(b::WeightedParticleBelief, i, s)
     b.particles[i] = s
 end
 
+function set_weight!(b::WeightedParticleBelief, i, w)
+    weight_difference = w - b.weights[i]
+    b.weight_sum += weight_difference
+    b.weights[i] = w
+    b._probs = nothing # invalidate _probs cache
+    b._alias_table = nothing # invalidate alias table
+end
+
 function set_pair!(b::WeightedParticleBelief, i, sw)
     w = last(sw)
     s = first(sw)
@@ -237,10 +270,7 @@ function set_pair!(b::WeightedParticleBelief, i, sw)
     weight_difference = w - b.weights[i]
     b.weight_sum += weight_difference
     b.weights[i] = w
-    if !isnothing(b._probs)
-        fraction = w / weight_sum(b)
-        b._probs[s] = get(b._probs, s, 0.0) + fraction
-    end
+    b._probs = nothing # invalidate _probs cache
     b._alias_table = nothing # invalidate alias table
     return sw
 end
@@ -248,7 +278,7 @@ end
 function push_pair!(b::WeightedParticleBelief, sw)
     push!(b.particles, first(sw))
     push!(b.weights, last(sw))
-    b._probs = nothing # invalidate _probs cache XXX this should be modified to update efficiently without throwing it away.
+    b._probs = nothing # invalidate _probs cache
     b._alias_table = nothing # invalidate alias table
     return b
 end

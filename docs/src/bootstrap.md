@@ -18,8 +18,7 @@ BasicParticleFilter()
 
 Without POMDPs.jl, setup looks like this:
 ```jldoctest intro; output=false, filter=r"BasicParticleFilter.*" => s"BasicParticleFilter"
-using ParticleFilters
-using Distributions: Normal
+using ParticleFilters, Distributions
 
 dynamics(x, u, rng) = x + u + randn(rng)
 y_likelihood(x_previous, u, x, y) = pdf(Normal(), y - x)
