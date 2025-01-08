@@ -16,4 +16,5 @@ For documentation on all aspects of the package, see the contents below.
 ## Contents
 
 ```@contents
+Pages = Main.page_order
 ```
