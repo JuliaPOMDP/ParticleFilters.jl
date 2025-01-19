@@ -289,9 +289,7 @@ function push_pair!(b::WeightedParticleBelief, sw)
 end
 
 # Made the decision for now to have this always use alias sampling because this is more efficient when many samples are drawn, and usually many samples will be drawn.
-# This should probably be upgraded to hook better into the Random API
-# https://docs.julialang.org/en/v1/stdlib/Random/#An-optimized-sampler-with-pre-computed-data
-# But many of the online solvers use rand(b) on every iteration. Perhaps they should be changed to use rand(b, number_of_samples) instead.
+# Confirmed this hunch with profile/pomcp.jl - naive sampling takes half the planning time; alias sampling takes a negligible amount of time.
 function Random.rand(rng::AbstractRNG, sampler::Random.SamplerTrivial{<:WeightedParticleBelief})
     b = sampler[]
     alias_single_sample(b, rng)
