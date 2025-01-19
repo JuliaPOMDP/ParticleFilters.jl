@@ -19,29 +19,19 @@ import Random: rand, gentype
 import Statistics: mean, cov, var
 
 using AliasTables: AliasTable
-
-# TODO cleanup export
+using ReadOnlyArrays: ReadOnlyVector
 
 export
     AbstractParticleBelief,
     ParticleCollection,
     WeightedParticleBelief,
     BasicParticleFilter,
-    ImportanceResampler,
-    LowVarianceResampler,
     UnweightedParticleFilter,
-    ParticleFilterModel,
-#     PredictModel,
     BootstrapFilter
-#     ReweightModel
 
-# export
-#     resample,
-#     predict,
-#     predict!,
-#     reweight,
-#     reweight!,
-#     particle_memory
+export
+    check_particle_belief,
+    PostprocessChain
 
 export
     n_particles,
@@ -59,8 +49,6 @@ export
     effective_sample_size,
     low_variance_sample
     
-#     n_init_samples,
-
 export
     runfilter
 
@@ -71,15 +59,9 @@ export
     support,
     initialize_belief
 
-# deprecated
-export
-    SIRParticleFilter
 
 include("beliefs.jl")
 include("basic.jl")
-
-export
-    low_variance_resample
 
 include("resamplers.jl")
 
@@ -91,5 +73,14 @@ include("pomdps.jl")
 include("policies.jl")
 include("runfilter.jl")
 include("deprecated.jl")
+
+# deprecated
+export
+    low_variance_resample,
+    ImportanceResampler,
+    LowVarianceResampler,
+    ParticleFilterModel
+
+
 
 end # module

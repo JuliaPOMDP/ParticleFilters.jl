@@ -1,10 +1,10 @@
 # this file contains functions for glue between this package and POMDPs.jl
 
-struct POMDPPredicter{M<:POMDP} <: Function
+struct POMDPPredictor{M<:POMDP} <: Function
     m::M
 end
 
-function (pre::POMDPPredicter)(b, a, o, rng)
+function (pre::POMDPPredictor)(b, a, o, rng)
     all_terminal = true
     ps = Array{gentype(b)}(undef, n_particles(b))
     for i in 1:n_particles(b)

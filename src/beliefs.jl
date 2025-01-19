@@ -81,7 +81,7 @@ function set_weight! end
 """
     set_pair!(b::AbstractParticleBelief{S}, i, sw::Pair{S,Float64})
 
-Change both the particle and weight at index i. This will also adjust the weight sum appropriately.
+Change both the particle and weight at index i. This will also adjust the weight sum and probabilities appropriately.
 
 # Example
 ```julia
@@ -90,10 +90,15 @@ set_pair!(b, 3, s=>0.5)
 """
 function set_pair! end
 
-# TODO: document
 """
     push_pair!(b::AbstractParticleBelief{S}, sw::Pair{S,Float64})
 
+Push a new particle and weight pair onto the end of the belief. This will also adjust the weight sum and probabilities appropriately.
+
+# Example
+```julia
+push_pair!(b, s=>0.5)
+```
 """
 function push_pair! end
 
@@ -123,7 +128,7 @@ end
 """
     low_variance_sample(b::AbstractParticleBelief, n[, rng])
 
-Sample n particles according to their weights using the "low variance" sampling algorithm on page 110 of Probabilistic Robotics by Thrun Burgard and Fox. O(n) runtime, correlated samples, but produces a useful low-variance set.
+Sample an `AbstractVector` of n particles according to their weights using the "low variance" sampling algorithm on page 110 of Probabilistic Robotics by Thrun Burgard and Fox. O(n) runtime, correlated samples, but produces a useful low-variance set.
 """
 function low_variance_sample end
 
@@ -141,7 +146,7 @@ function low_variance_sample end
 Unweighted particle belief consisting of equally important particles of type `S`.
 """
 mutable struct ParticleCollection{T} <: AbstractParticleBelief{T}
-    particles::Vector{T}
+    _particles::Vector{T}
     _probs::Union{Nothing, Dict{T,Float64}} # a cache for the probabilities
 
     ParticleCollection{T}() where {T} = new(T[], nothing)
@@ -150,16 +155,16 @@ mutable struct ParticleCollection{T} <: AbstractParticleBelief{T}
 end
 ParticleCollection(p::AbstractVector{T}) where T = ParticleCollection{T}(p, nothing)
 
-n_particles(b::ParticleCollection) = length(b.particles)
-particles(p::ParticleCollection) = p.particles
-weights(b::ParticleCollection) = ones(n_particles(b))
-weighted_particles(p::ParticleCollection) = (s=>1.0 for s in p.particles)
+n_particles(b::ParticleCollection) = length(b._particles)
+particles(p::ParticleCollection) = ReadOnlyVector(p._particles)
+weights(b::ParticleCollection) = ReadOnlyVector(ones(n_particles(b)))
+weighted_particles(p::ParticleCollection) = (s=>1.0 for s in p._particles)
 weight_sum(b::ParticleCollection) = n_particles(b)
 weight(b::ParticleCollection, i::Int) = 1.0
-particle(b::ParticleCollection, i::Int) = b.particles[i]
+particle(b::ParticleCollection, i::Int) = b._particles[i]
 
 function set_particle!(b::ParticleCollection, i, s)
-    b.particles[i] = s
+    b._particles[i] = s
 end
 
 function set_weight!(b::ParticleCollection, i, w)
@@ -170,7 +175,7 @@ function set_pair!(b::ParticleCollection, i, sw)
     @assert isapprox(last(sw), 1.0)
     new = first(sw)
     old = particle(b, i)
-    b.particles[i] = new
+    b._particles[i] = new
     if !isnothing(b._probs)
         fraction = 1/n_particles(b)
         b._probs[old] -= fraction
@@ -182,7 +187,7 @@ end
 function push_pair!(b::ParticleCollection, sw)
     @assert isapprox(last(sw), 1.0)
     new = first(sw)
-    push!(b.particles, new)
+    push!(b._particles, new)
     if !isnothing(b._probs)
         # the probabilities of all other states get "taxed" to pay for the new state
         fraction_kept_after_tax = (n_particles(b) - 1) / n_particles(b)
@@ -191,28 +196,27 @@ function push_pair!(b::ParticleCollection, sw)
         end
         fraction = 1/n_particles(b)
         b._probs[new] = get(b._probs, new, 0.0) + fraction
-        # TODO make sure to test that these updates are consistent (i.e. the probabilities sum to 1)
     end
     return b
 end
 
-rand(rng::AbstractRNG, sampler::Random.SamplerTrivial{<:ParticleCollection}) = sampler[].particles[rand(rng, 1:length(sampler[].particles))]
+rand(rng::AbstractRNG, sampler::Random.SamplerTrivial{<:ParticleCollection}) = sampler[]._particles[rand(rng, 1:length(sampler[]._particles))]
 support(b::ParticleCollection) = unique(particles(b))
-Statistics.mean(b::ParticleCollection) = sum(b.particles) / length(b.particles)
+Statistics.mean(b::ParticleCollection) = sum(b._particles) / length(b._particles)
 function Statistics.cov(b::ParticleCollection{T}) where {T <: Number} # uncorrected covariance
-    centralized = b.particles .- mean(b)
-    centralized' * centralized / length(b.particles) # dot product
+    centralized = b._particles .- mean(b)
+    centralized' * centralized / length(b._particles) # dot product
 end
 function Statistics.cov(b::ParticleCollection{T}) where {T <: Vector} # uncorrected covariance
-    centralized = reduce(hcat, b.particles) .- mean(b)
-    centralized * centralized' / length(b.particles) # outer product
+    centralized = reduce(hcat, b._particles) .- mean(b)
+    centralized * centralized' / length(b._particles) # outer product
 end
 
 function low_variance_sample(b::ParticleCollection, n::Int, rng::AbstractRNG=Random.default_rng())
     r = rand(rng)*n_particles(b)/n
     chunk = n_particles(b)/n
     inds = ceil.(Int, chunk*(0:n-1).+r)
-    return particles(b)[inds]
+    return b._particles[inds]
 end
 
 effective_sample_size(b::ParticleCollection) = n_particles(b)
@@ -227,9 +231,9 @@ Weighted particle belief consisting of particles of type `S` and their associate
 An alias table is used for efficient sampling.
 """
 mutable struct WeightedParticleBelief{T} <: AbstractParticleBelief{T}
-    particles::Vector{T}
-    weights::Vector{Float64}
-    weight_sum::Float64
+    _particles::Vector{T}
+    _weights::Vector{Float64}
+    _weight_sum::Float64
     _probs::Union{Nothing, Dict{T,Float64}}
     _alias_table::Union{Nothing, AliasTable{UInt, Int}}
 end
@@ -240,22 +244,22 @@ function WeightedParticleBelief(particles::AbstractVector{T},
     return WeightedParticleBelief{T}(particles, weights, weight_sum, nothing, nothing)
 end
 
-n_particles(b::WeightedParticleBelief) = length(b.particles)
-particles(p::WeightedParticleBelief) = p.particles
-weighted_particles(b::WeightedParticleBelief) = (b.particles[i]=>b.weights[i] for i in 1:length(b.particles))
-weight_sum(b::WeightedParticleBelief) = b.weight_sum
-weight(b::WeightedParticleBelief, i::Int) = b.weights[i]
-particle(b::WeightedParticleBelief, i::Int) = b.particles[i]
-weights(b::WeightedParticleBelief) = b.weights
+n_particles(b::WeightedParticleBelief) = length(b._particles)
+particles(p::WeightedParticleBelief) = ReadOnlyVector(p._particles)
+weighted_particles(b::WeightedParticleBelief) = (b._particles[i]=>b._weights[i] for i in 1:length(b._particles))
+weight_sum(b::WeightedParticleBelief) = b._weight_sum
+weight(b::WeightedParticleBelief, i::Int) = b._weights[i]
+particle(b::WeightedParticleBelief, i::Int) = b._particles[i]
+weights(b::WeightedParticleBelief) = ReadOnlyVector(b._weights)
 
 function set_particle!(b::WeightedParticleBelief, i, s)
-    b.particles[i] = s
+    b._particles[i] = s
 end
 
 function set_weight!(b::WeightedParticleBelief, i, w)
-    weight_difference = w - b.weights[i]
-    b.weight_sum += weight_difference
-    b.weights[i] = w
+    weight_difference = w - b._weights[i]
+    b._weight_sum += weight_difference
+    b._weights[i] = w
     b._probs = nothing # invalidate _probs cache
     b._alias_table = nothing # invalidate alias table
 end
@@ -266,18 +270,19 @@ function set_pair!(b::WeightedParticleBelief, i, sw)
     if !isnothing(b._probs)
         b._probs[particle(b, i)] -= weight(b, i)/weight_sum(b)
     end
-    b.particles[i] = s
-    weight_difference = w - b.weights[i]
-    b.weight_sum += weight_difference
-    b.weights[i] = w
+    b._particles[i] = s
+    weight_difference = w - b._weights[i]
+    b._weight_sum += weight_difference
+    b._weights[i] = w
     b._probs = nothing # invalidate _probs cache
     b._alias_table = nothing # invalidate alias table
     return sw
 end
 
 function push_pair!(b::WeightedParticleBelief, sw)
-    push!(b.particles, first(sw))
-    push!(b.weights, last(sw))
+    push!(b._particles, first(sw))
+    push!(b._weights, last(sw))
+    b._weight_sum += last(sw)
     b._probs = nothing # invalidate _probs cache
     b._alias_table = nothing # invalidate alias table
     return b
@@ -294,33 +299,33 @@ end
 
 function alias_single_sample(b::WeightedParticleBelief, rng)
     if b._alias_table == nothing
-        b._alias_table = AliasTable(b.weights)
+        b._alias_table = AliasTable(b._weights)
     end
     at = b._alias_table::AliasTable{UInt, Int}
 
-    return b.particles[rand(rng, at)]
+    return b._particles[rand(rng, at)]
 end
 
 function naive_single_sample(b::WeightedParticleBelief, rng)
     t = rand(rng) * weight_sum(b)
     i = 1
-    cw = b.weights[1]
-    while cw < t && i < length(b.weights)
+    cw = b._weights[1]
+    while cw < t && i < length(b._weights)
         i += 1
-        @inbounds cw += b.weights[i]
+        @inbounds cw += b._weights[i]
     end
     return particles(b)[i]
 end
 
-Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Number} = dot(b.weights, b.particles) / weight_sum(b)
-Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Vector} = reduce(hcat, b.particles) * b.weights / weight_sum(b)
+Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Number} = dot(b._weights, b._particles) / weight_sum(b)
+Statistics.mean(b::WeightedParticleBelief{T}) where {T <: Vector} = reduce(hcat, b._particles) * b._weights / weight_sum(b)
 function Statistics.cov(b::WeightedParticleBelief{T}) where {T <: Number} # uncorrected covariance
-    centralized = b.particles .- mean(b)
-    sum(centralized .* b.weights .* centralized) / weight_sum(b)
+    centralized = b._particles .- mean(b)
+    sum(centralized .* b._weights .* centralized) / weight_sum(b)
 end
 function Statistics.cov(b::WeightedParticleBelief{T}) where {T <: Vector} # uncorrected covariance
-    centralized = reduce(hcat, b.particles) .- mean(b)
-    (centralized .* b.weights') * centralized' / weight_sum(b)
+    centralized = reduce(hcat, b._particles) .- mean(b)
+    (centralized .* b._weights') * centralized' / weight_sum(b)
 end
 
 function low_variance_sample(b::AbstractParticleBelief, n::Int, rng::AbstractRNG=Random.default_rng())

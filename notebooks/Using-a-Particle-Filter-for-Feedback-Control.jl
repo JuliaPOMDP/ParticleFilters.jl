@@ -109,14 +109,11 @@ md"""
 These models are combined to create a model suitable for the filter. Note that the type of the state is designated as a parameter to the constructor. See the ["Models" section of the documentation](https://juliapomdp.github.io/ParticleFilters.jl/latest/models/) for more info.
 """
 
-# ╔═╡ 6953d10c-f263-11ea-0a30-0941e8c7bc84
-model = ParticleFilterModel{Vector{Float64}}(f, g);
-
 # ╔═╡ 765a9bc4-f263-11ea-25e1-bf24e1b608aa
 @bind N Slider(10:1000; default = 500, show_value = true)
 
 # ╔═╡ 9ca26ce4-f263-11ea-36b3-67ef6dc1db6e
-filter = BootstrapFilter(model, N);
+filter = BootstrapFilter(f, g, N);
 
 # ╔═╡ a3974042-f263-11ea-3341-cbc37f25e3f9
 md"""
@@ -1385,25 +1382,3 @@ git-tree-sha1 = "9ebfc140cc56e8c2156a15ceac2f0302e327ac0a"
 uuid = "d8fb68d0-12a3-5cfd-a85a-d49703b185fd"
 version = "1.4.1+0"
 """
-
-# ╔═╡ Cell order:
-# ╟─44554bc0-f262-11ea-0e76-cbfff70e6c90
-# ╠═5af7cd80-f262-11ea-2c84-65b966027d9b
-# ╟─7fefdcea-f262-11ea-05fa-c3732da7e626
-# ╠═fcc8f134-f262-11ea-0218-6d4615a3ac2a
-# ╠═11081f76-f263-11ea-0620-05ed0d0bb51b
-# ╠═1109ebd0-f263-11ea-3a0b-f35b84be9eee
-# ╠═111300e4-f263-11ea-3402-678b54969279
-# ╠═11138672-f263-11ea-1202-29b59cfdd689
-# ╠═111e49f4-f263-11ea-0a30-01ec97c3819e
-# ╟─2efcb064-f263-11ea-26dc-b77b7549039f
-# ╠═3678ef06-f263-11ea-2528-c3c33b51d692
-# ╠═3bcb979c-f263-11ea-35fa-fdbcf12a5da1
-# ╟─47cc1b8e-f263-11ea-1625-3bd91bb0732d
-# ╠═6953d10c-f263-11ea-0a30-0941e8c7bc84
-# ╠═765a9bc4-f263-11ea-25e1-bf24e1b608aa
-# ╠═9ca26ce4-f263-11ea-36b3-67ef6dc1db6e
-# ╟─a3974042-f263-11ea-3341-cbc37f25e3f9
-# ╠═d3841d84-f263-11ea-1c57-170f949e05cb
-# ╟─00000000-0000-0000-0000-000000000001
-# ╟─00000000-0000-0000-0000-000000000002

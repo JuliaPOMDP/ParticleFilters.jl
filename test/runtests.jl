@@ -10,8 +10,6 @@ using Documenter # for doctest
 
 doctest(ParticleFilters)
 
-# TODO: test BootstrapFilter(pomdp, n, rng)
-
 struct P <: POMDP{Nothing,Nothing,Nothing} end
 ParticleFilters.obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing) = 1.0
 
@@ -21,7 +19,7 @@ ParticleFilters.obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing) = 1.
 end
 
 include("example.jl")
-# include("domain_specific_resampler.jl")
+include("domain_specific_resampler.jl")
 include("beliefs.jl")
 
 struct ContinuousPOMDP <: POMDP{Float64,Float64,Float64} end
@@ -39,9 +37,6 @@ struct ContinuousPOMDP <: POMDP{Float64,Float64,Float64} end
     @testset "lowvar" begin
         @inferred low_variance_sample(b, 100, Random.default_rng())
         @test all(s in support(b) for s in low_variance_sample(b, 100, Random.default_rng()))
-
-        rs = LowVarianceResampler(1000)
-        @inferred rs(b, TIGER_LISTEN, true, MersenneTwister(3))
 
         ps = particles(b)
         ws = ones(length(ps))

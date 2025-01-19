@@ -59,6 +59,8 @@ WeightedParticleBelief()
 
 In order to give access to additional information such as static dynamics parameters, consider using a [`callable object`](https://docs.julialang.org/en/v1/manual/methods/#Function-like-objects). For additional examples, and to re-use elements from the `BootstrapFilter`, see the [`BootstrapFilter`](@ref) source code.
 
+Some building blocks for constructing a `BasicParticleFilter` are provided in the `ParticleFilters` module. For example, the `BasicPredictor`, `BasicReweighter`, `POMDPPredictor`, and `POMDPReweighter` are not exported, but can be used to construct the `predict` and `reweight` functions for a `BasicParticleFilter`. The `check_particle_belief` function can be used as a postprocessing step, and `PostprocessChain` can be used to chain multiple postprocessing steps together. A function `(b, a, o, up.rng) -> ParticleCollection(low_variance_sample(b, 100, up.rng))` or `NormalizedESSConditionalResampler` can be used as a preprocessing step.
+
 ## Reference
 
 ```@docs

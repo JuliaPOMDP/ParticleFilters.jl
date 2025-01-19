@@ -21,8 +21,8 @@ function BootstrapFilter end # for docs
 
 function BootstrapFilter(m::POMDP, n::Int; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng())
     return BasicParticleFilter(
-        NormalizedESSConditionalResampler((b, a, o, rng) -> low_variance_sample(b, n, rng), resample_threshold),
-        POMDPPredicter(m),
+        NormalizedESSConditionalResampler(low_variance_sample, n, resample_threshold),
+        POMDPPredictor(m),
         POMDPReweighter(m),
         PostprocessChain(postprocess, check_particle_belief),
         initialize=(d, rng)->initialize_to(WeightedParticleBelief, n, d, rng),
@@ -32,7 +32,7 @@ end
 
 function BootstrapFilter(dynamics::Function, likelihood::Function, n::Int; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng())
     return BasicParticleFilter(
-        NormalizedESSConditionalResampler((b, a, o, rng) -> low_variance_sample(b, n, rng), resample_threshold),
+        NormalizedESSConditionalResampler(low_variance_sample, n, resample_threshold),
         BasicPredictor(dynamics),
         BasicReweighter(likelihood),
         PostprocessChain(postprocess, check_particle_belief),
@@ -45,7 +45,7 @@ function initialize_to(B::Type{<:AbstractParticleBelief}, n, d::AbstractParticle
     if isa(d, B) && n_particles(d) == n
         return d
     else
-        return B(low_variance_resample(d, n, rng))
+        return B(low_variance_sample(d, n, rng))
     end
 end
 
@@ -68,7 +68,7 @@ function sample_non_particle(d, n, rng)
                     push!(particles, s)
                     push!(weights, w)
                 end
-                return low_variance_resample(WeightedParticleBelief(particles, weights), n, rng)
+                return low_variance_sample(WeightedParticleBelief(particles, weights), n, rng)
         end
     catch ex
         if ex isa MethodError
