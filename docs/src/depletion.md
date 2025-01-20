@@ -22,33 +22,24 @@ Creating a postprocessing function is best illustrated by a simple example:
 
 In this example, we have a system with integer states states and actions, deterministic dynamics, and an observation that is uniformly distributed over the current state plus or minus 1. If all state particles start 1, action 1 is taken, and observation 4 is received, then no particles are consistent with the observation. This will yield a warning about particle depletion and produce a belief with zero-weighted particles that cannot be sampled from or used effectively: 
 
-```jldoctest depletion
+```@example depletion
 using ParticleFilters, Distributions
 
-dynamics(x, u, rng) = x + u
-likelihood(x_previous, u, x, y) = abs(y - x) <= 1
+dynamics(s, a, rng) = s + a
+likelihood(s_previous, a, s, o) = abs(o - s) <= 1
 naive_pf = BootstrapFilter(dynamics, likelihood, 3)
 
 b0 = ParticleCollection([1, 1, 1])
-u = 1
-y = 4
+a = 1
+o = 4
 
-bp = update(naive_pf, b0, u, y)
-
-# output
-
-┌ Warning: Sum of particle filter weights is not greater than zero. This
-│ could be due to particle depletion. See the documentation of the
-│ ParticleFilters package for instructions on handling particle depletion.
-│   weight_sum(b) = 0.0
-└ @ ParticleFilters ~/.julia/dev/ParticleFilters/src/postprocessing.jl:8
-WeightedParticleBelief{Int64}([2, 2, 2], [0.0, 0.0, 0.0], 0.0, nothing, nothing)
-
+bp = update(naive_pf, b0, a, o)
+nothing # hide
 ```
 
 To fix this, we define a postprocessing step to refill the particle belief with particles consistent with the observation:
 
-```jldoctest depletion; output=false
+```@example depletion
 function refill_with_consistent(bp, a, o, b, bb, rng)
     if weight_sum(bp) == 0.0
         return WeightedParticleBelief([o-1, o, o+1], ones(3))
@@ -56,26 +47,18 @@ function refill_with_consistent(bp, a, o, b, bb, rng)
         return bp
     end
 end
-
-# output
-
-refill_with_consistent (generic function with 1 method)
-
+nothing # hide
 ```
 
 Note that this solution is *very* domain-specific. It relies on specific knowledge about the observation function. In other applications, you will likely need to be clever about coming up with ways to create replacement particles in cases of depletion.
 Armed with the new postprocessing step, we can create a new filter and use it for a belief update:
 
-```jldoctest depletion
+```@example depletion
 pf = BootstrapFilter(dynamics, likelihood, 3; postprocess=refill_with_consistent)
-bp = update(pf, b0, u, y)
-
-# output
-
-WeightedParticleBelief{Int64}([3, 4, 5], [1.0, 1.0, 1.0], 3.0, nothing, nothing)
+bp = update(pf, b0, a, o)
 ```
 
-While this new belief is consistent with the observation, it does not take into account the dynamics or information from the previous steps. A better solution might be to populate the new belief with particles as near the previous particles as possible while still being consistent with the observation. Tricks like this are often necessary to get good performance in practice and they constitute the art of particle filtering.
+While this new belief is consistent with the observation, it does not take into account the dynamics or information from the previous steps. A better solution might be to populate the new belief with particles as near as possible to the previous particles while still being consistent with the observation. Tricks like this are often necessary to get good performance in practice and they are an important part of the art of particle filtering.
 
 ## Additional Examples of Postprocessing Functions
 
