@@ -1,11 +1,12 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+POMDPModels = "355abbd5-f08e-5560-ac9e-8b5f2592a0ca"
 POMDPs = "a93abf59-7444-517b-a68a-c42f96afdd7d"
 ParticleFilters = "c8b314e2-9260-5cf8-ae76-3be7461ca6d0"
-PlutoSliderServer = "2fc8631c-6f24-4c5b-bca7-cbb509c42db4"
-POMDPModels = "355abbd5-f08e-5560-ac9e-8b5f2592a0ca"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+VegaLite = "112f6efa-9a02-5b7d-90c0-432ed331239a"
 
 [compat]
 Documenter = "1.8"
-POMDPs = "1"
 POMDPModels = "0.4"
+POMDPs = "1"

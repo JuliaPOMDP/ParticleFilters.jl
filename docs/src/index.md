@@ -7,8 +7,8 @@ Additionally, an important requirement for a particle filter is efficient resamp
 Dynamics and measurement models for the filters can be specified with a few functions or a [`POMDP`](https://github.com/JuliaPOMDP/POMDPs.jl). The simplest Bootstrap Particle filter can be constructed with [`BootstrapFilter`](@ref). [`BasicParticleFilter`](@ref) provides a more flexible structure.
 
 There are [tutorials](/notebooks) for three ways to use the particle filters:
-1. As an [estimator for feedback control](notebooks/Using-a-Particle-Filter-for-Feedback-Control.html),
-2. to [filter time-series measurements](notebooks/Filtering-a-Trajectory-or-Data-Series.html), and
+1. As an [estimator for feedback control](@ref Example:-Feedback-Control),
+2. to [filter time-series measurements](@ref Example:-Filtering-Preexisting-Data), and
 3. as an [updater for POMDPs.jl](notebooks/Using-a-Particle-Filter-with-POMDPs-jl.html).
 
 For documentation on all aspects of the package, see the contents below.

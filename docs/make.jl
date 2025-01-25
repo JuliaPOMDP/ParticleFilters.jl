@@ -1,4 +1,4 @@
-using Documenter, ParticleFilters, POMDPs, PlutoSliderServer
+using Documenter, ParticleFilters, POMDPs
 
 page_order = [
     "index.md",
@@ -7,12 +7,9 @@ page_order = [
     "basic.md",
     "depletion.md",
     "sampling.md",
+    "example-filtering.md",
+    "example-feedback.md",
 ]
-
-PlutoSliderServer.export_directory(
-    "$(@__DIR__)/../notebooks";
-    Export_output_dir="$(@__DIR__)/build/notebooks"
-)
 
 makedocs(
     modules=[ParticleFilters, POMDPs],

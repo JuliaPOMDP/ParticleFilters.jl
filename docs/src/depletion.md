@@ -111,7 +111,7 @@ PostprocessChain(replace_zero_weight_particles, add_noise)
 
 If no other information is available, a quick solution is to replace zero-weight particles with states drawn from the initial distribution. In POMDPs.jl, the `initialstate` function can be used to generate these states. This implementation uses a callable object to store the POMDP model.
 
-```jldoctest replace_with_initial; output=false
+```@example replace_with_initial
 using ParticleFilters, POMDPs, POMDPModels
 
 struct ReplaceWithInitial{M <: POMDP} <: Function
@@ -132,17 +132,12 @@ function (r::ReplaceWithInitial)(bp, a, o, b, bb, rng)
     return bp
 end
 
-# output
-
+nothing # hide
 ```
 
 The filter can then be created as follows:
 
-```jldoctest replace_with_initial; output=false, filter=r"BasicParticleFilter.*"=>s"BasicParticleFilter"
+```@example replace_with_initial
 m = TigerPOMDP()
 pf = BootstrapFilter(m, 1, postprocess=ReplaceWithInitial(m, 0.1))
-
-# output
-
-BasicParticleFilter()
 ```
