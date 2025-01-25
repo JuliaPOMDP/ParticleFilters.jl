@@ -9,6 +9,7 @@ page_order = [
     "sampling.md",
     "example-filtering.md",
     "example-feedback.md",
+    "example-pomdps.md",
 ]
 
 makedocs(

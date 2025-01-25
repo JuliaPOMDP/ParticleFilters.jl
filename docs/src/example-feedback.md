@@ -103,5 +103,5 @@ x = [0.0, 1.0, 1.0, 0.0]; # initial state
 
     plt = scatter([p[1] for p in particles(b)], [p[2] for p in particles(b)], color=:black, markersize=2, alpha=sqrt.(weights(b)./weight_sum(b)), label="")
     scatter!(plt, [x[1]], [x[2]], color=:blue, xlim=(-5,5), ylim=(-5,5), label="")
-end
+end fps=5
 ```

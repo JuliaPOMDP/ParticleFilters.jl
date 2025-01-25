@@ -9,7 +9,7 @@ Dynamics and measurement models for the filters can be specified with a few func
 There are [tutorials](/notebooks) for three ways to use the particle filters:
 1. As an [estimator for feedback control](@ref Example:-Feedback-Control),
 2. to [filter time-series measurements](@ref Example:-Filtering-Preexisting-Data), and
-3. as an [updater for POMDPs.jl](notebooks/Using-a-Particle-Filter-with-POMDPs-jl.html).
+3. as an [updater for POMDPs.jl](@ref Example:-Use-with-POMDPs.jl).
 
 For documentation on all aspects of the package, see the contents below.
 
