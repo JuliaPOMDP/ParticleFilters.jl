@@ -32,7 +32,7 @@ nothing # hide
 
 We can then plot the particle distribution at each step using Plots.jl.
 
-Note that as the belief passes through the light region (centered at y=5)
+Note that as the belief passes through the light region (centered at y=5), the belief concentrates on a single state.
 
 ```@example pomdps
 @gif for b in belief_hist(history)
