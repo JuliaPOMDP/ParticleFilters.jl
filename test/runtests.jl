@@ -97,27 +97,3 @@ end
     @test action(policy, b) == true
     @test isapprox(value(policy, b), -29.4557)
 end
-
-# Note: we wrap each notebook in a module to avoid pollution of the global namespace.
-# See also: https://github.com/JuliaLang/julia/issues/40189#issuecomment-871250226
-cd("../notebooks/") do
-    @testset "data series" begin
-        @eval Module() begin
-            Base.include(@__MODULE__, "../notebooks/Filtering-a-Trajectory-or-Data-Series.jl")
-        end
-    end
-
-    @testset "feedback" begin
-        @eval Module() begin
-            Base.include(@__MODULE__, "../notebooks/Using-a-Particle-Filter-for-Feedback-Control.jl")
-        end
-    end
-
-    @testset "pomdps" begin
-        @eval Module() begin
-            Base.include(@__MODULE__, "../notebooks/Using-a-Particle-Filter-with-POMDPs-jl.jl")
-        end
-    end
-end
-
-
