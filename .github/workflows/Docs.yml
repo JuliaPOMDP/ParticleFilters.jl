@@ -19,6 +19,7 @@ jobs:
           julia --project=docs -e '
             using Pkg
             Pkg.develop(PackageSpec(path=pwd()))
+            Pkg.develop("POMDPs")
             Pkg.instantiate()'
       - run: julia --project=docs docs/make.jl
         env:

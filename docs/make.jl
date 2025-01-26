@@ -17,7 +17,7 @@ makedocs(
     format=Documenter.HTML(),
     sitename="ParticleFilters.jl",
     warnonly = [:missing_docs, :cross_references],
-    pages = page_order
+    pages = page_order,
 )
 
 deploydocs(
