@@ -1,144 +1,47 @@
 ### Basic Particle Filter ###
-# implements the POMDPs.jl Updater interface
-"""
-    BasicParticleFilter(predict_model, reweight_model, resampler, n_init::Integer, rng::AbstractRNG)
-    BasicParticleFilter(model, resampler, n_init::Integer, rng::AbstractRNG)
 
-Construct a basic particle filter with three steps: predict, reweight, and resample.
-
-In the second constructor, `model` is used for both the prediction and reweighting.
 """
-mutable struct BasicParticleFilter{PM,RM,RS,RNG<:AbstractRNG,PMEM} <: Updater
-    predict_model::PM
-    reweight_model::RM
-    resampler::RS
-    n_init::Int
+    BasicParticleFilter(preprocess, predict, reweight, postprocess; [rng], [initialize])
+
+Create a basic particle filter. See the [Basic Particle Filter](@ref) section of the ParticleFilters.jl documentation for more explanation.
+
+# Arguments
+
+In the functions below, `b` is the belief at the beginning of the update, `a` is the action, and `o` is the observation. When present, `particles` is an `AbstractVector` of propagated particles, `bp` is the new belief after the prediciton and reweighting steps, and `bb` is the belief after the preprocessing step.
+
+- `preprocess::Function`: Function to preprocess the belief before the prediction step. The function should have the signature `preprocess(b::AbstractParticleBelief, a, o, rng)`, and should return a new belief. The returned belief may be the same as `b` (i.e. modified in place), or a new object.
+- `predict::Function`: Function to propagate the particles forward in time. The function should have the signature `predict(b::AbstractParticleBelief, a, o, rng)`, and should return an `AbstractVector` of particles.
+- `reweight::Function`: Function to reweight the particles based on the observation. The function should have the signature `reweight(b::AbstractParticleBelief, a, particles, o)`, and should return an `AbstractVector` of weights.
+- `postprocess::Function`: Function to postprocess the belief after the update. The function should have the signature `postprocess(bp::WeightedParticleBelief, a, o, b, bb, rng)`, and should return a new belief. The returned belief may be the same as `bp` (i.e. modified in place), or a new object.
+
+# Keyword Arguments
+- `rng::AbstractRNG=Random.default_rng()`: Random number generator.
+- `initialize::Function=(d, rng)->d`: Function to initialize the belief by creating a particle belief from a distribution. This can be safely ignored in many applications, but is important in POMDPs.jl. The function should have the signature `initialize(d, rng)`, and should return a new `AbstractParticleBelief` representing distribution `d`.
+"""
+struct BasicParticleFilter{F1,F2,F3,F4,F5,RNG<:AbstractRNG} <: Updater
+    preprocess::F1
+    predict::F2
+    reweight::F3
+    postprocess::F4
+    initialize::F5
     rng::RNG
-    _particle_memory::PMEM
-    _weight_memory::Vector{Float64}
 end
 
-## Constructors ##
-function BasicParticleFilter(model, resampler, n::Integer, rng::AbstractRNG=Random.GLOBAL_RNG)
-    return BasicParticleFilter(model, model, resampler, n, rng)
+function BasicParticleFilter(preprocess, predict, reweight, postprocess;
+                             rng=Random.default_rng(),
+                             initialize=(b,rng)->b)
+    return BasicParticleFilter(preprocess, predict, reweight, postprocess, initialize, rng)
 end
 
-function BasicParticleFilter(pmodel, rmodel, resampler, n::Integer, rng::AbstractRNG=Random.GLOBAL_RNG)
-    return BasicParticleFilter(pmodel,
-                               rmodel,
-                               resampler,
-                               n,
-                               rng,
-                               particle_memory(pmodel),
-                               Float64[]
-                              )
-end
-
-"""
-    particle_memory(m)
-
-Return a suitable container for particles produced by prediction model `m`.
-
-This should usually be an empty `Vector{S}` where `S` is the type of the state for prediction model `m`. Size does not matter because `resize!` will be called appropriately within `update`.
-"""
-function particle_memory end
-
-function update(up::BasicParticleFilter, b::ParticleCollection, a, o)
-    pm = up._particle_memory
-    wm = up._weight_memory
-    resize!(pm, n_particles(b))
-    resize!(wm, n_particles(b))
-    predict!(pm, up.predict_model, b, a, o, up.rng)
-    reweight!(wm, up.reweight_model, b, a, pm, o, up.rng)
-
-    return resample(up.resampler,
-                    WeightedParticleBelief(pm, wm, sum(wm), nothing),
-                    up.predict_model,
-                    up.reweight_model,
-                    b, a, o,
-                    up.rng)
+function update(up::BasicParticleFilter, b::AbstractParticleBelief, a, o)
+    bb = up.preprocess(b, a, o, up.rng)
+    particles = up.predict(bb, a, o, up.rng)
+    weights = up.reweight(bb, a, particles, o)
+    bp = WeightedParticleBelief(particles, weights)
+    return up.postprocess(bp, a, o, b, bb, up.rng)
 end
 
 function Random.seed!(f::BasicParticleFilter, seed)
     Random.seed!(f.rng, seed)
     return f
 end
-
-"""
-    predict!(pm, m, b, u, rng)
-    predict!(pm, m, b, u, y, rng)
-
-Fill `pm` with predicted particles for the next time step.
-
-A method of this function should be implemented by prediction models to be used in a [`BasicParticleFilter`](@ref). `pm` should be a correctly-sized vector created by [`particle_memory`](@ref) to hold a one-step-propagated particle for each particle in `b`.
-
-Normally the observation `y` is not needed, so most prediction models should implement the first version, but the second is available for heuristics that use `y`.
-
-# Arguments
-- `pm::Vector`: memory for holding the propagated particles; created by [`particle_memory`](@ref) and resized to `n_particles(b)`.
-- `m`: prediction model, the "owner" of this function
-- `b::ParticleCollection`: current belief; each particle in this belief should be propagated one step and inserted into `pm`.
-- `u`: control or action
-- `rng::AbstractRNG`: random number generator; should be used for any randomness in propagation for reproducibility.
-- `y`: measuerement/observation (usually not needed)
-"""
-function predict! end
-
-"""
-    reweight!(wm, m, b, a, pm, y)
-    reweight!(wm, m, b, a, pm, y, rng)
-
-Fill `wm` likelihood weights for each particle in `pm`.
-
-A method of this function should be implemented by reweighting models to be used in a [`BasicParticleFilter`](@ref). `wm` should be a correctly-sized vector to hold weights for each particle in pm.
-
-Normally `rng` is not needed, so most reweighting models should implement the first version, but the second is available for heuristics that use random numbers.
-
-# Arguments
-- `wm::Vector{Float64}`: memory for holding likelihood weights.
-- `m`: reweighting model, the "owner" of this function
-- `b::ParticleCollection`: previous belief; `pm` should contain a propagated particle for each particle in this belief
-- `u`: control or action
-- `pm::Vector`: memory for holding current particles; these particle have been propagated by `predict!`.
-- `y`: measurement/observation
-- `rng::AbstractRNG`: random number generator; should be used for any randomness for reproducibility.
-"""
-function reweight! end
-
-predict!(pm, m, b, a, o, rng) = predict!(pm, m, b, a, rng)
-reweight!(wm, m, b, a, pm, o, rng) = reweight!(wm, m, b, a, pm, o)
-
-"""
-    predict(m, b, u, rng)
-
-Simulate each of the particles in `b` forward one time step using model `m` and contol input `u` returning a vector of states. Calls [`predict!`](@ref) internally - see that function for documentation.
-
-This function is provided for convenience only. New models should implement `predict!`.
-"""
-function predict end
-
-function predict(m, b, args...)
-    pm = particle_memory(m)
-    resize!(pm, n_particles(b))
-    predict!(pm, m, b, args...)
-    return pm
-end
-predict(f::BasicParticleFilter, args...) = predict(f.predict_model, args...)
-
-"""
-    reweight(m, b, u, pm, y)
-
-Return a vector of likelihood weights for each particle in `pm` given observation `y`.
-
-`pm` can be generated with `predict(m, b, u, rng)`.
-
-This function is provided for convenience only - new reweighting models should implement `reweight!`.
-"""
-function reweight end
-
-function reweight(m, b, args...)
-    wm = Vector{Float64}(undef, n_particles(b))
-    reweight!(wm, m, b, args...)
-    return wm
-end
-reweight(f::BasicParticleFilter, args...) = reweight(f.reweight_model, args...)

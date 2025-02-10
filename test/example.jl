@@ -23,13 +23,12 @@ const V = Matrix(Diagonal{Float64}(I, 2)) # Measurement noise covariance
 
 f(x, u, rng) = A*x + B*u + rand(rng, MvNormal(W))
 g(x0, u, x, y) = pdf(MvNormal(x[1:2], V), y)
-model = ParticleFilterModel{Vector{Float64}}(f, g)
 
 h(x, rng) = rand(rng, MvNormal(x[1:2], V))
 
 @testset "example" begin
     N = 1000
-    filter = BootstrapFilter(model, N)
+    filter = BootstrapFilter(f, g, N)
     Random.seed!(1)
     rng = Random.GLOBAL_RNG
     b = ParticleCollection([4.0*rand(4).-2.0 for i in 1:N])

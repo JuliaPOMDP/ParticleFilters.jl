@@ -1,7 +1,7 @@
 """
 UnweightedParticleFilter
 
-A particle filter that does not use any reweighting, but only keeps particles if the observation matches the true observation exactly. This does not require obs_weight, but it will not work well in real-world situations.
+A particle filter for POMDPs that does not use any reweighting, but only keeps particles if the observation matches the true observation exactly. This does not require obs_weight, but it will not work well in real-world situations.
 """
 struct UnweightedParticleFilter{M, RNG<:AbstractRNG} <: Updater
     model::M
@@ -9,7 +9,7 @@ struct UnweightedParticleFilter{M, RNG<:AbstractRNG} <: Updater
     rng::RNG
 end
 
-function UnweightedParticleFilter(model, n::Integer; rng=Base.GLOBAL_RNG)
+function UnweightedParticleFilter(model::POMDP, n::Integer; rng=Base.GLOBAL_RNG)
     return UnweightedParticleFilter(model, n, rng)
 end
 

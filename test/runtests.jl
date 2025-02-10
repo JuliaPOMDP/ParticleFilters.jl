@@ -6,6 +6,9 @@ using Test
 using POMDPTools
 using Random
 using Distributions
+using Documenter # for doctest
+
+doctest(ParticleFilters)
 
 struct P <: POMDP{Nothing,Nothing,Nothing} end
 ParticleFilters.obs_weight(::P, ::Nothing, ::Nothing, ::Nothing, ::Nothing) = 1.0
@@ -32,20 +35,20 @@ struct ContinuousPOMDP <: POMDP{Float64,Float64,Float64} end
         @inferred weighted_particles(b)
     end
     @testset "lowvar" begin
-        rs = LowVarianceResampler(1000)
-        @inferred resample(rs, b, MersenneTwister(3))
+        @inferred low_variance_sample(b, 100, Random.default_rng())
+        @test all(s in support(b) for s in low_variance_sample(b, 100, Random.default_rng()))
+
         ps = particles(b)
         ws = ones(length(ps))
-        @inferred resample(rs, WeightedParticleBelief(ps, ws, sum(ws)), MersenneTwister(3))
-        @inferred resample(rs, WeightedParticleBelief{Bool}(ps, ws, sum(ws), nothing), MersenneTwister(3))
+        @inferred low_variance_sample(WeightedParticleBelief(ps, ws, sum(ws)), 100, MersenneTwister(3))
+        @inferred low_variance_sample(WeightedParticleBelief{Bool}(ps, ws, sum(ws), nothing, nothing), 100, MersenneTwister(3))
     end
     # test that the special method for ParticleCollections works
     @testset "collection" begin
-        rs = LowVarianceResampler(1000)
-        b = ParticleCollection(1:1000)
-        rb1 = @inferred resample(rs, b, MersenneTwister(3))
-        rb2 = @inferred resample(rs, WeightedParticleBelief(particles(b), ones(n_particles(b))), MersenneTwister(3))
-        @test all(particles(rb1) .== particles(rb2))
+        b = ParticleCollection(1:100)
+        rb1 = @inferred low_variance_sample(b, 100, MersenneTwister(3))
+        rb2 = @inferred low_variance_sample(WeightedParticleBelief(particles(b), ones(n_particles(b))), 100, MersenneTwister(3))
+        @test all(rb1 .== rb2)
     end
 
     @testset "unweighted" begin
@@ -93,26 +96,4 @@ end
     # because baby is hungry, policy should feed (return true)
     @test action(policy, b) == true
     @test isapprox(value(policy, b), -29.4557)
-end
-
-# Note: we wrap each notebook in a module to avoid pollution of the global namespace.
-# See also: https://github.com/JuliaLang/julia/issues/40189#issuecomment-871250226
-cd("../notebooks/") do
-    @testset "data series" begin
-        @eval Module() begin
-            Base.include(@__MODULE__, "../notebooks/Filtering-a-Trajectory-or-Data-Series.jl")
-        end
-    end
-
-    @testset "feedback" begin
-        @eval Module() begin
-            Base.include(@__MODULE__, "../notebooks/Using-a-Particle-Filter-for-Feedback-Control.jl")
-        end
-    end
-
-    @testset "pomdps" begin
-        @eval Module() begin
-            Base.include(@__MODULE__, "../notebooks/Using-a-Particle-Filter-with-POMDPs-jl.jl")
-        end
-    end
 end

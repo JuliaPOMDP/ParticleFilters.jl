@@ -18,26 +18,20 @@ using POMDPTools.ModelTools: weighted_iterator
 import Random: rand, gentype
 import Statistics: mean, cov, var
 
+using AliasTables: AliasTable
+using ReadOnlyArrays: ReadOnlyVector
+
 export
     AbstractParticleBelief,
     ParticleCollection,
     WeightedParticleBelief,
     BasicParticleFilter,
-    ImportanceResampler,
-    LowVarianceResampler,
     UnweightedParticleFilter,
-    ParticleFilterModel,
-    PredictModel,
-    BootstrapFilter,
-    ReweightModel
+    BootstrapFilter
 
 export
-    resample,
-    predict,
-    predict!,
-    reweight,
-    reweight!,
-    particle_memory
+    check_particle_belief,
+    PostprocessChain
 
 export
     n_particles,
@@ -48,7 +42,14 @@ export
     particle,
     weights,
     obs_weight,
-    n_init_samples,
+    set_particle!,
+    set_weight!,
+    set_pair!,
+    push_pair!,
+    effective_sample_size,
+    low_variance_sample
+    
+export
     runfilter
 
 export
@@ -58,19 +59,28 @@ export
     support,
     initialize_belief
 
-# deprecated
-export
-    SIRParticleFilter
 
 include("beliefs.jl")
 include("basic.jl")
+
 include("resamplers.jl")
+
 include("unweighted.jl")
 include("models.jl")
+include("postprocessing.jl")
 include("bootstrap.jl")
 include("pomdps.jl")
 include("policies.jl")
 include("runfilter.jl")
 include("deprecated.jl")
+
+# deprecated
+export
+    low_variance_resample,
+    ImportanceResampler,
+    LowVarianceResampler,
+    ParticleFilterModel
+
+
 
 end # module
