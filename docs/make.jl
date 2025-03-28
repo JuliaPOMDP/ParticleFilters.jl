@@ -22,6 +22,5 @@ makedocs(
 
 deploydocs(
     repo="github.com/JuliaPOMDP/ParticleFilters.jl.git",
-    target="build",
     push_preview = true,
 )
