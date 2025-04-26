@@ -19,7 +19,7 @@ For more explanation, see the Bootstrap Filter section of the ParticleFilters.jl
 """
 function BootstrapFilter end # for docs
 
-function BootstrapFilter(m::POMDP, n::Int; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng())
+function BootstrapFilter(m::POMDP, n::Integer; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng())
     return BasicParticleFilter(
         NormalizedESSConditionalResampler(low_variance_sample, n, resample_threshold),
         POMDPPredictor(m),
@@ -30,7 +30,7 @@ function BootstrapFilter(m::POMDP, n::Int; resample_threshold=0.9, postprocess=(
     )
 end
 
-function BootstrapFilter(dynamics::Function, likelihood::Function, n::Int; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng())
+function BootstrapFilter(dynamics::Function, likelihood::Function, n::Integer; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng())
     return BasicParticleFilter(
         NormalizedESSConditionalResampler(low_variance_sample, n, resample_threshold),
         BasicPredictor(dynamics),

@@ -12,7 +12,12 @@ end
 
 @deprecate BasicReweighter(m::ParticleFilterModel) BasicReweighter(m.g)
 
-@deprecate BootstrapFilter(m::ParticleFilterModel, n::Int; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng()) BootstrapFilter(m.f, m.g, n; resample_threshold=resample_threshold, postprocess=postprocess, rng=rng)
+@deprecate BootstrapFilter(m::ParticleFilterModel, n::Integer; resample_threshold=0.9, postprocess=(bp, args...)->bp, rng::AbstractRNG=Random.default_rng()) BootstrapFilter(m.f, m.g, n; resample_threshold=resample_threshold, postprocess=postprocess, rng=rng)
+
+@deprecate BootstrapFilter(m::ParticleFilterModel, n::Integer, rng::AbstractRNG; resample_threshold=0.9, postprocess=(bp, args...)->bp) BootstrapFilter(m.f, m.g, n; resample_threshold=resample_threshold, postprocess=postprocess, rng=rng)
+
+@deprecate BootsrapFilter(m::POMDP, n::Integer, rng::AbstractRNG) BootstrapFilter(m, n; rng=rng)
+
 
 @deprecate low_variance_resample(b::AbstractParticleBelief, n::Int, rng::AbstractRNG) low_variance_sample(b, n, rng)
 
