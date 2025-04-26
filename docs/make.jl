@@ -22,7 +22,7 @@ makedocs(
 
 deploydocs(
     repo="github.com/JuliaPOMDP/ParticleFilters.jl.git",
-    push_preview = true,
+    # push_preview = true,
     devbranch = "master",
     # the manual versions below is a hack... hopefully some day it can get removed
     versions = ["stable" => "v0.6",
