@@ -1,7 +1,7 @@
 name = "ParticleFilters"
 uuid = "c8b314e2-9260-5cf8-ae76-3be7461ca6d0"
 repo = "https://github.com/JuliaPOMDP/ParticleFilters.jl"
-version = "0.6.0"
+version = "0.6.1"
 
 [deps]
 AliasTables = "66dad0bd-aa9a-41b7-9441-69ab47430ed8"
